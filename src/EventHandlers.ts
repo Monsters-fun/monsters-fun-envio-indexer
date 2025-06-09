@@ -162,13 +162,10 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
     return;
   }
 
-  // Convert to ether for experience points calculation only
-  const ethAmountInEther = new BigDecimal(ethAmount.toString()).dividedBy(WEI_TO_ETHER);
-  
   const supply = isBuy ? monster.supply + amount : monster.supply - amount;
   const depositsTotal = isBuy ? monster.depositsTotal + ethAmount : monster.depositsTotal; 
   const withdrawalsTotal = isBuy ? monster.withdrawalsTotal : monster.withdrawalsTotal + ethAmount;
-  const experiencePointsChange = ethAmountInEther.multipliedBy(MONSTER_XP_MULTIPLIER)
+  const experiencePointsChange = new BigDecimal(ethAmount.toString()).multipliedBy(MONSTER_XP_MULTIPLIER)
   const experiencePoints = isBuy ? monster.experiencePoints.plus(experiencePointsChange) : monster.experiencePoints.minus(experiencePointsChange)
 
   monster = {

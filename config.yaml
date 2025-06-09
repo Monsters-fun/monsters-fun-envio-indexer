@@ -7,7 +7,7 @@ networks:
   contracts:
   - name: CreatureBoringFactory
     address:
-    - 0xd96623b95abf7acc754642bc0e057afe302832e8
+    - 0x5D2806990a82ADDA3145edf9F11BED42857De48F
     handler: src/EventHandlers.ts
     events:
     - event: event TokenCreated(address tokenAddress, string name, string symbol)
