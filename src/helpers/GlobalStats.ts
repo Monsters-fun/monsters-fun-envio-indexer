@@ -1,10 +1,10 @@
-import { handlerContext, GlobalStats } from "generated";
+import { handlerContext, GlobalStats, BigDecimal } from "generated";
 
 export const globalStatsId = "global";
 
 export const defaultGlobalStats: GlobalStats = {
   id: globalStatsId,
-  protocolFees: 0n,
+  protocolFees: new BigDecimal(0),
 }
 
 export const createGlobalStats = async (

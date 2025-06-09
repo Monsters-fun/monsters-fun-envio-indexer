@@ -84,6 +84,9 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   const { logIndex, srcAddress } = event
   const { timestamp, number } = event.block
 
+  // Convert token amount from wei to ETH
+  const amountInEth = new BigDecimal(value.toString()).dividedBy(WEI_TO_ETHER);
+
   let monster: Monster | undefined = await context.Monster.get(srcAddress);
 
   if (!monster) {    
@@ -97,7 +100,7 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     traderEntity = {
       id: to,
       numberOfTrades: 0,      
-      points: 0n
+      points: new BigDecimal(0)
     }
     context.Trader.set(traderEntity);
   } 
@@ -110,8 +113,8 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     monster: srcAddress,
     trader: from,
     tradeType: "TRANSFER_OUT" ,
-    amount: value,
-    ethAmount: 0n,
+    amount: amountInEth,
+    ethAmount: new BigDecimal(0),
     blockTimestamp: BigInt(timestamp),
     blockNumber: BigInt(number),
   }
@@ -126,8 +129,8 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     monster: srcAddress,
     trader: to,
     tradeType: "TRANSFER_IN" ,
-    amount: value,
-    ethAmount: 0n,
+    amount: amountInEth,
+    ethAmount: new BigDecimal(0),
     blockTimestamp: BigInt(timestamp),
     blockNumber: BigInt(number),
   }
@@ -135,10 +138,10 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   context.Trade.set(tradeIn);
 
   // update the current holding for the from address 
-  await createOrUpdateHoldingsTransfer(context, monster, from, 0n - value, monster.price, hash, logIndex, srcAddress, timestamp);
+  await createOrUpdateHoldingsTransfer(context, monster, from, new BigDecimal(0).minus(amountInEth), monster.price, hash, logIndex, srcAddress, timestamp);
 
   // update the current holding for the to address
-  await createOrUpdateHoldingsTransfer(context, monster, to, value, monster.price, hash, logIndex, srcAddress, timestamp);
+  await createOrUpdateHoldingsTransfer(context, monster, to, amountInEth, monster.price, hash, logIndex, srcAddress, timestamp);
 
 })
 
@@ -148,11 +151,16 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
   const { srcAddress, logIndex } = event
   const { timestamp } = event.block  
 
+  // Convert amounts from wei to ETH
+  const amountInEth = new BigDecimal(amount.toString()).dividedBy(WEI_TO_ETHER);
+  const ethAmountInEth = new BigDecimal(ethAmount.toString()).dividedBy(WEI_TO_ETHER);
+  const protocolFeeInEth = new BigDecimal(protocolFee.toString()).dividedBy(WEI_TO_ETHER);
+
   let globalStats: GlobalStats | undefined = await context.GlobalStats.get(globalStatsId);
   if (globalStats) {
-    await updateGlobalStats(context, globalStats, {protocolFees: globalStats.protocolFees + protocolFee});  
+    await updateGlobalStats(context, globalStats, {protocolFees: globalStats.protocolFees.plus(protocolFeeInEth)});  
   } else {
-    await createGlobalStats(context, {protocolFees: protocolFee});
+    await createGlobalStats(context, {protocolFees: protocolFeeInEth});
   }  
 
   let monster: Monster | undefined = await context.Monster.get(srcAddress);
@@ -162,16 +170,16 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
     return;
   }
 
-  const supply = isBuy ? monster.supply + amount : monster.supply - amount;
-  const depositsTotal = isBuy ? monster.depositsTotal + ethAmount : monster.depositsTotal; 
-  const withdrawalsTotal = isBuy ? monster.withdrawalsTotal : monster.withdrawalsTotal + ethAmount;
-  const experiencePointsChange = new BigDecimal(ethAmount.toString()).multipliedBy(MONSTER_XP_MULTIPLIER)
+  const supply = isBuy ? monster.supply.plus(amountInEth) : monster.supply.minus(amountInEth);
+  const depositsTotal = isBuy ? monster.depositsTotal.plus(ethAmountInEth) : monster.depositsTotal; 
+  const withdrawalsTotal = isBuy ? monster.withdrawalsTotal : monster.withdrawalsTotal.plus(ethAmountInEth);
+  const experiencePointsChange = ethAmountInEth.multipliedBy(new BigDecimal(MONSTER_XP_MULTIPLIER))
   const experiencePoints = isBuy ? monster.experiencePoints.plus(experiencePointsChange) : monster.experiencePoints.minus(experiencePointsChange)
 
   monster = {
     ...monster,
     supply: supply,      
-    totalVolumeTraded: monster.totalVolumeTraded + ethAmount,
+    totalVolumeTraded: monster.totalVolumeTraded.plus(ethAmountInEth),
     depositsTotal: depositsTotal,
     withdrawalsTotal: withdrawalsTotal,
     experiencePoints: experiencePoints, 
@@ -196,7 +204,7 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
         ...whitelistedTrade,
         tradeType: isBuy ? "BUY" : "SELL", // I believe this will only ever be a buy
         logIndexTrade: logIndex,
-        ethAmount: ethAmount,      
+        ethAmount: ethAmountInEth,      
       }
       context.Trade.set(whitelistedTrade);
       const whitelistPurchaseSnapshot: WhitelistPurchaseSnapshot = {
@@ -204,7 +212,7 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
         monster_id: srcAddress,
         trader: trader,
         timestamp: timestamp,
-        ethAmountPurchased: ethAmount,
+        ethAmountPurchased: ethAmountInEth,
       }
       context.WhitelistPurchaseSnapshot.set(whitelistPurchaseSnapshot);      
     }
@@ -213,7 +221,7 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
       ...trade,
       tradeType: isBuy ? "BUY" : "SELL",
       logIndexTrade: logIndex,
-      ethAmount: ethAmount,      
+      ethAmount: ethAmountInEth,      
     }
   
     context.Trade.set(trade);    
@@ -225,13 +233,13 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
     traderEntity = {
       id: trader,
       numberOfTrades: 1,      
-      points: ethAmount * BigInt(TRADE_POINTS_MULTIPLIER), 
+      points: ethAmountInEth.multipliedBy(new BigDecimal(TRADE_POINTS_MULTIPLIER)), 
     }
   } else {
     traderEntity = {
       ...traderEntity,
       numberOfTrades: traderEntity.numberOfTrades + 1,
-      points: traderEntity.points + (ethAmount * BigInt(TRADE_POINTS_MULTIPLIER)),
+      points: traderEntity.points.plus(ethAmountInEth.multipliedBy(new BigDecimal(TRADE_POINTS_MULTIPLIER))),
     }
   }
 
@@ -258,7 +266,7 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
   context.TotalVolumeTradedSnapshot.set(totalVolumeTradedSnapshot);    
 
   // update the current holding for the trader
-  await updateHoldingsTrade(context, monster, trader, isBuy ? amount : -amount, monster.price, hash, logIndex, srcAddress, timestamp);
+  await updateHoldingsTrade(context, monster, trader, isBuy ? amountInEth : amountInEth.negated(), monster.price, hash, logIndex, srcAddress, timestamp);
   
 });
 
@@ -278,7 +286,8 @@ CreatureBoringToken.PriceUpdate.handler(async ({event, context}) => {
     
     updateMonster(context, monster, {
       price: priceInEther, 
-      marketCap: marketCapInEther
+      marketCap: marketCapInEther,
+      supply: supplyInEther
     }) 
     
     context.PriceSnapShot.set({
@@ -334,6 +343,9 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
     const { timestamp } = event.block
     const  { allCurrentHoldings } = loaderReturn;
 
+    // Convert transferred value from wei to ETH
+    const transferredValueInEth = new BigDecimal(transferredValue.toString()).dividedBy(WEI_TO_ETHER);
+
     const isWin = winner == srcAddress;
 
     if (isWin) {
@@ -343,10 +355,10 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
           context.log.error("Trader has holdings but is not in the database")
           return;
         }
-        const additionalPoints = new BigDecimal(WIN_POINTS_MULTIPLIER).multipliedBy(new BigDecimal(currentHoldings.balance.toString()));
+        const additionalPoints = new BigDecimal(WIN_POINTS_MULTIPLIER).multipliedBy(currentHoldings.balance);
         trader = {
           ...trader,
-          points: trader.points + BigInt(additionalPoints.integerValue().toString()),
+          points: trader.points.plus(additionalPoints),
         }
         
         context.Trader.set(trader);
@@ -378,7 +390,7 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
       win: isWin,
       timestamp: BigInt(timestamp),
       opponent: isWin ? loser : winner,
-      transferredValue: transferredValue,
+      transferredValue: transferredValueInEth,
     })
   }
 })

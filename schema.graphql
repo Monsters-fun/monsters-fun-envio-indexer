@@ -2,16 +2,16 @@ type Monster {
     id: ID! # Token Address
     name: String!
     symbol: String!
-    supply: BigInt!
+    supply: BigDecimal! # Supply in ETH
     price: BigDecimal!
     PriceSnapShot: [PriceSnapShot!]! @derivedFrom(field: "monster")
     marketCap: BigDecimal!
     marketCapSnapshots: [MarketCapSnapshot!]! @derivedFrom(field: "monster")
-    totalVolumeTraded: BigInt! # total ethAmount of all buy / sells / trades
+    totalVolumeTraded: BigDecimal! # total ethAmount of all buy / sells / trades in ETH
     totalVolumeTradedSnapshots: [TotalVolumeTradedSnapshot!]! @derivedFrom(field: "monster")
     trades: [Trade!]! @derivedFrom(field: "monster")
-    depositsTotal: BigInt! # total ethAmount of all trades where isBuy
-    withdrawalsTotal: BigInt! # total ethAmount of all trades where !isBuy
+    depositsTotal: BigDecimal! # total ethAmount of all trades where isBuy in ETH
+    withdrawalsTotal: BigDecimal! # total ethAmount of all trades where !isBuy in ETH
     experiencePoints: BigDecimal! 
     battleOutcomes: [BattleOutcome!]! @derivedFrom(field: "monster")
     totalWinsCount: Int! # total wins
@@ -36,7 +36,7 @@ type MarketCapSnapshot {
     id: ID! # txHash-logIndex
     monster: String! @index
     timestamp: BigInt! @index
-    supply: BigInt!
+    supply: BigDecimal! # Supply in ETH
     price: BigDecimal!
     marketCap: BigDecimal! 
 }
@@ -45,7 +45,7 @@ type TotalVolumeTradedSnapshot {
     id: ID! # txHash-logIndex
     monster: String! @index
     timestamp: BigInt! @index    
-    totalVolumeTraded: BigInt! 
+    totalVolumeTraded: BigDecimal! # Volume in ETH
 }
 
 type BattleOutcome {
@@ -53,7 +53,7 @@ type BattleOutcome {
     monster: String! @index
     win: Boolean! 
     opponent: String! @index
-    transferredValue: BigInt! @index
+    transferredValue: BigDecimal! @index # Value in ETH
     timestamp: BigInt! @index
 }
 
@@ -72,8 +72,8 @@ type Trade {
     monster: String! 
     trader: String! @index
     tradeType: TradeType!
-    amount: BigInt! @index
-    ethAmount: BigInt! @index
+    amount: BigDecimal! @index # Token amount in ETH
+    ethAmount: BigDecimal! @index # ETH amount in ETH
     blockTimestamp: BigInt! @index # Timestamp for 24-hour Data Queries # todo: make this an Int
     blockNumber: BigInt! 
 }
@@ -85,14 +85,14 @@ type Trader {
     holdings: [CurrentHoldings!]! @derivedFrom(field: "trader")        
     holdingsSnapshots: [HoldingsSnapshot!]! @derivedFrom(field: "trader")
     whitelistPurchaseSnapshots: [WhitelistPurchaseSnapshot!]! @derivedFrom(field: "trader")
-    points: BigInt! # in 10^18    
+    points: BigDecimal! # Points (can be decimal for more precision)
 }
 
 type CurrentHoldings {
     id: ID! # monster-trader
     monster: Monster! @index
     trader: String! @index
-    balance: BigInt!
+    balance: BigDecimal! # Balance in ETH
     lastTradePrice: BigDecimal!
     lastTradeMarketCap: BigDecimal!
     totalHoldingsCost: BigDecimal!
@@ -104,7 +104,7 @@ type HoldingsSnapshot {
     monster: Monster! @index
     price: BigDecimal!
     trader: String! @index
-    balance: BigInt!
+    balance: BigDecimal! # Balance in ETH
     marketCap: BigDecimal!
     timestamp: Int! @index
 }
@@ -114,10 +114,10 @@ type WhitelistPurchaseSnapshot {
     monster: Monster! @index    
     trader: String! @index    
     timestamp: Int! @index
-    ethAmountPurchased: BigInt!
+    ethAmountPurchased: BigDecimal! # Amount in ETH
 }
 
 type GlobalStats {
     id: ID! # 'global'
-    protocolFees: BigInt!
+    protocolFees: BigDecimal! # Fees in ETH
 }
