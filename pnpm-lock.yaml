@@ -119,6 +119,81 @@ importers:
         specifier: 17.7.2
         version: 17.7.2
 
+  generated:
+    dependencies:
+      '@elastic/ecs-pino-format':
+        specifier: 1.4.0
+        version: 1.4.0
+      '@envio-dev/hypersync-client':
+        specifier: 0.6.5
+        version: 0.6.5
+      '@glennsl/rescript-fetch':
+        specifier: 0.2.0
+        version: 0.2.0
+      '@rescript/react':
+        specifier: 0.12.1
+        version: 0.12.1(react-dom@19.1.0(react@18.2.0))(react@18.2.0)
+      bignumber.js:
+        specifier: 9.1.2
+        version: 9.1.2
+      date-fns:
+        specifier: 3.3.1
+        version: 3.3.1
+      dotenv:
+        specifier: 16.4.5
+        version: 16.4.5
+      ethers:
+        specifier: 6.8.0
+        version: 6.8.0
+      express:
+        specifier: 4.19.2
+        version: 4.19.2
+      ink:
+        specifier: 3.2.0
+        version: 3.2.0(react@18.2.0)
+      ink-big-text:
+        specifier: 1.2.0
+        version: 1.2.0(ink@3.2.0(react@18.2.0))(react@18.2.0)
+      ink-spinner:
+        specifier: 4.0.3
+        version: 4.0.3(ink@3.2.0(react@18.2.0))(react@18.2.0)
+      js-sdsl:
+        specifier: 4.4.2
+        version: 4.4.2
+      pino:
+        specifier: 8.16.1
+        version: 8.16.1
+      pino-pretty:
+        specifier: 10.2.3
+        version: 10.2.3
+      postgres:
+        specifier: 3.4.1
+        version: 3.4.1
+      prom-client:
+        specifier: 15.0.0
+        version: 15.0.0
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      rescript:
+        specifier: 11.1.3
+        version: 11.1.3
+      rescript-envsafe:
+        specifier: 5.0.0
+        version: 5.0.0(rescript-schema@9.3.0(rescript@11.1.3))(rescript@11.1.3)
+      rescript-schema:
+        specifier: 9.3.0
+        version: 9.3.0(rescript@11.1.3)
+      root:
+        specifier: ../.
+        version: link:..
+      viem:
+        specifier: 2.21.0
+        version: 2.21.0(typescript@5.2.2)
+      yargs:
+        specifier: 17.7.2
+        version: 17.7.2
+
 packages:
 
   '@adraffy/ens-normalize@1.10.0':
@@ -136,8 +211,13 @@ packages:
     resolution: {integrity: sha512-eCSBUTgl8KbPyxky8cecDRLCYu2C1oFV4AZ72bEsI+TxXEvaljaL2kgttfzfu7gW+M89eCz55s49uF2t+YMTWA==}
     engines: {node: '>=10'}
 
+<<<<<<< Updated upstream
   '@envio-dev/hypersync-client-darwin-arm64@0.6.3':
     resolution: {integrity: sha512-w4OLJaq3lD03iXPJxLnPpoxOduvzCfEe2nYtamvIRLPB2SlbxnB5EF5dSyFs6WKh1x4PMsksQOUKeCcOtQPZow==}
+=======
+  '@envio-dev/hypersync-client-darwin-arm64@0.6.5':
+    resolution: {integrity: sha512-BjFmDFd+7QKuEkjlvwQjKy9b+ZWidkZHyKPjKSDg6u3KJe+fr+uY3rsW9TXNscUxJvl8YxJ2mZl0svOH7ukTyQ==}
+>>>>>>> Stashed changes
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -377,12 +457,21 @@ packages:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
+<<<<<<< Updated upstream
   call-bind-apply-helpers@1.0.1:
     resolution: {integrity: sha512-BhYE+WDaywFg2TBWYNXAE+8B1ATnThNBqXHP5nQu0jWJdVvY2hvkpyB3qOmtmDePiS5/BDQ8wASEWGMWRG148g==}
     engines: {node: '>= 0.4'}
 
   call-bound@1.0.3:
     resolution: {integrity: sha512-YTd+6wGlNlPxSuri7Y6X8tY2dmm12UMH66RpKMhiX6rsk5wXXnYgbUcOt8kiS31/AjfoTOvCsE+w8nZQLQnzHA==}
+=======
+  call-bind-apply-helpers@1.0.2:
+    resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
+    engines: {node: '>= 0.4'}
+
+  call-bound@1.0.4:
+    resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
+>>>>>>> Stashed changes
     engines: {node: '>= 0.4'}
 
   camelcase@6.3.0:
@@ -554,8 +643,13 @@ packages:
   end-of-stream@1.4.4:
     resolution: {integrity: sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==}
 
+<<<<<<< Updated upstream
   envio-darwin-arm64@2.17.0:
     resolution: {integrity: sha512-MUD1sRh73xtixXiEmY6PTC4LJBD+ALWWFdi4Rpll/IBwGg2IoWP/RQrqOJ7WToq6c2N5+GBIyxe444hyQkmmgQ==}
+=======
+  envio-darwin-arm64@2.21.5:
+    resolution: {integrity: sha512-YiP6M0AVIeP9oycry2HD9DllIEuue3XfXMWuFdekC7Yi5hJ+MTI8uVFk7OlFlu/JO7P3MximqQY+DjmFTup6fg==}
+>>>>>>> Stashed changes
     cpu: [arm64]
     os: [darwin]
 
@@ -687,8 +781,13 @@ packages:
   get-func-name@2.0.2:
     resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
 
+<<<<<<< Updated upstream
   get-intrinsic@1.2.7:
     resolution: {integrity: sha512-VW6Pxhsrk0KAOqs3WEd0klDiF/+V7gQOpAvY1jVU/LHmaD/kQO4523aiJuikX/QAKYiW6x8Jh+RJej1almdtCA==}
+=======
+  get-intrinsic@1.3.0:
+    resolution: {integrity: sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==}
+>>>>>>> Stashed changes
     engines: {node: '>= 0.4'}
 
   get-proto@1.0.1:
@@ -956,6 +1055,7 @@ packages:
     resolution: {integrity: sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==}
     engines: {node: '>= 0.6'}
 
+<<<<<<< Updated upstream
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
@@ -965,6 +1065,8 @@ packages:
       encoding:
         optional: true
 
+=======
+>>>>>>> Stashed changes
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -1093,10 +1195,17 @@ packages:
   react-devtools-core@4.28.5:
     resolution: {integrity: sha512-cq/o30z9W2Wb4rzBefjv5fBalHU0rJGZCHAkf/RHSBWSSYwh8PlQTqqOJmgIIbBtpj27T6FIPXeomIjZtCNVqA==}
 
+<<<<<<< Updated upstream
   react-dom@19.0.0:
     resolution: {integrity: sha512-4GV5sHFG0e/0AD4X+ySy6UJd3jVl1iNsNHdpad0qhABJ11twS3TTBnseqsKurKcsNqCEFeGL3uLpVChpIO3QfQ==}
     peerDependencies:
       react: ^19.0.0
+=======
+  react-dom@19.1.0:
+    resolution: {integrity: sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==}
+    peerDependencies:
+      react: ^19.1.0
+>>>>>>> Stashed changes
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -1137,8 +1246,13 @@ packages:
       rescript: 11.x
       rescript-schema: 9.x
 
+<<<<<<< Updated upstream
   rescript-schema@9.1.0:
     resolution: {integrity: sha512-zD6hpg59HF6QJ3rnmhFV6mYtbfUd6ZTu20osL93aR9fdc3GTIX6N8Fy/6btgZ9a35A2NAzTvCgh/dz3EK7qfAw==}
+=======
+  rescript-schema@9.3.0:
+    resolution: {integrity: sha512-NiHAjlhFKZCmNhx/Ij40YltCEJJgVNhBWTN/ZfagTg5hdWWuvCiUacxZv+Q/QQolrAhTnHnCrL7RDvZBogHl5A==}
+>>>>>>> Stashed changes
     peerDependencies:
       rescript: 11.x
 
@@ -1167,8 +1281,13 @@ packages:
   scheduler@0.20.2:
     resolution: {integrity: sha512-2eWfGgAqqWFGqtdMmcL5zCMK1U8KlXv8SQFGglL3CEtd0aDVDWgeF/YoCmvln55m5zSk3J/20hTaSBeSObsQDQ==}
 
+<<<<<<< Updated upstream
   scheduler@0.25.0:
     resolution: {integrity: sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==}
+=======
+  scheduler@0.26.0:
+    resolution: {integrity: sha512-NlHwttCI/l5gCPR3D1nNXtWABUmBwvZpEQiD4IXSbIDq8BzLIK/7Ir5gTFSGZDUu37K5cMNp0hFtzO38sC7gWA==}
+>>>>>>> Stashed changes
 
   secure-json-parse@2.7.0:
     resolution: {integrity: sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==}
@@ -1187,8 +1306,13 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
+<<<<<<< Updated upstream
   shell-quote@1.8.2:
     resolution: {integrity: sha512-AzqKpGKjrj7EM6rKVQEPpB288oCfnrEIuyoT9cyF4nmGa7V8Zk6f7RRqYisX8X9m+Q7bd632aZW4ky7EhbQztA==}
+=======
+  shell-quote@1.8.3:
+    resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
+>>>>>>> Stashed changes
     engines: {node: '>= 0.4'}
 
   side-channel-list@1.0.0:
@@ -1281,9 +1405,12 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
+<<<<<<< Updated upstream
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
+=======
+>>>>>>> Stashed changes
   ts-mocha@10.0.0:
     resolution: {integrity: sha512-VRfgDO+iiuJFlNB18tzOfypJ21xn2xbuZyDvJvqpTbWgkAgD17ONGr8t+Tl8rcBtOBdjXp5e/Rk+d39f7XBHRw==}
     engines: {node: '>= 6.X.X'}
@@ -1372,12 +1499,15 @@ packages:
   webauthn-p256@0.0.5:
     resolution: {integrity: sha512-drMGNWKdaixZNobeORVIqq7k5DsRC9FnG201K2QjeOoQLmtSDaSsVZdkg6n5jUALJKcAG++zBPJXmv6hy0nWFg==}
 
+<<<<<<< Updated upstream
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
   whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
+=======
+>>>>>>> Stashed changes
   widest-line@3.1.0:
     resolution: {integrity: sha512-NsmoXalsWVDMGupxZ5R08ka9flZjjiLvHVAWYOKtiKM8ujtZWr9cRffak+uSE48+Ob8ObalXpwyeUiyDD6QFgg==}
     engines: {node: '>=8'}
@@ -1493,7 +1623,11 @@ snapshots:
     dependencies:
       '@elastic/ecs-helpers': 1.1.0
 
+<<<<<<< Updated upstream
   '@envio-dev/hypersync-client-darwin-arm64@0.6.3':
+=======
+  '@envio-dev/hypersync-client-darwin-arm64@0.6.5':
+>>>>>>> Stashed changes
     optional: true
 
   '@envio-dev/hypersync-client-darwin-x64@0.6.3':
@@ -1522,6 +1656,8 @@ snapshots:
 
   '@glennsl/rescript-fetch@0.2.0': {}
 
+  '@glennsl/rescript-fetch@0.2.0': {}
+
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
@@ -1545,10 +1681,17 @@ snapshots:
 
   '@opentelemetry/api@1.9.0': {}
 
+<<<<<<< Updated upstream
   '@rescript/react@0.12.1(react-dom@19.0.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       react: 18.2.0
       react-dom: 19.0.0(react@18.2.0)
+=======
+  '@rescript/react@0.12.1(react-dom@19.1.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      react: 18.2.0
+      react-dom: 19.1.0(react@18.2.0)
+>>>>>>> Stashed changes
 
   '@scure/base@1.1.9': {}
 
@@ -1698,15 +1841,26 @@ snapshots:
 
   bytes@3.1.2: {}
 
+<<<<<<< Updated upstream
   call-bind-apply-helpers@1.0.1:
+=======
+  call-bind-apply-helpers@1.0.2:
+>>>>>>> Stashed changes
     dependencies:
       es-errors: 1.3.0
       function-bind: 1.1.2
 
+<<<<<<< Updated upstream
   call-bound@1.0.3:
     dependencies:
       call-bind-apply-helpers: 1.0.1
       get-intrinsic: 1.2.7
+=======
+  call-bound@1.0.4:
+    dependencies:
+      call-bind-apply-helpers: 1.0.2
+      get-intrinsic: 1.3.0
+>>>>>>> Stashed changes
 
   camelcase@6.3.0: {}
 
@@ -1841,7 +1995,11 @@ snapshots:
 
   dunder-proto@1.0.1:
     dependencies:
+<<<<<<< Updated upstream
       call-bind-apply-helpers: 1.0.1
+=======
+      call-bind-apply-helpers: 1.0.2
+>>>>>>> Stashed changes
       es-errors: 1.3.0
       gopd: 1.2.0
 
@@ -1850,6 +2008,16 @@ snapshots:
   emoji-regex@8.0.0: {}
 
   encodeurl@1.0.2: {}
+<<<<<<< Updated upstream
+=======
+
+  end-of-stream@1.4.4:
+    dependencies:
+      once: 1.4.0
+
+  envio-darwin-arm64@2.21.5:
+    optional: true
+>>>>>>> Stashed changes
 
   end-of-stream@1.4.4:
     dependencies:
@@ -2010,9 +2178,15 @@ snapshots:
 
   get-func-name@2.0.2: {}
 
+<<<<<<< Updated upstream
   get-intrinsic@1.2.7:
     dependencies:
       call-bind-apply-helpers: 1.0.1
+=======
+  get-intrinsic@1.3.0:
+    dependencies:
+      call-bind-apply-helpers: 1.0.2
+>>>>>>> Stashed changes
       es-define-property: 1.0.1
       es-errors: 1.3.0
       es-object-atoms: 1.1.1
@@ -2046,7 +2220,11 @@ snapshots:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
+<<<<<<< Updated upstream
       minimatch: 5.1.6
+=======
+      minimatch: 5.0.1
+>>>>>>> Stashed changes
       once: 1.4.0
 
   gopd@1.2.0: {}
@@ -2291,10 +2469,13 @@ snapshots:
 
   negotiator@0.6.3: {}
 
+<<<<<<< Updated upstream
   node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 
+=======
+>>>>>>> Stashed changes
   normalize-path@3.0.0: {}
 
   object-assign@4.1.1: {}
@@ -2430,16 +2611,27 @@ snapshots:
 
   react-devtools-core@4.28.5:
     dependencies:
+<<<<<<< Updated upstream
       shell-quote: 1.8.2
+=======
+      shell-quote: 1.8.3
+>>>>>>> Stashed changes
       ws: 7.5.10
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
+<<<<<<< Updated upstream
   react-dom@19.0.0(react@18.2.0):
     dependencies:
       react: 18.2.0
       scheduler: 0.25.0
+=======
+  react-dom@19.1.0(react@18.2.0):
+    dependencies:
+      react: 18.2.0
+      scheduler: 0.26.0
+>>>>>>> Stashed changes
 
   react-is@16.13.1: {}
 
@@ -2476,6 +2668,7 @@ snapshots:
 
   require-directory@2.1.1: {}
 
+<<<<<<< Updated upstream
   rescript-envsafe@5.0.0(rescript-schema@9.1.0(rescript@11.1.3))(rescript@11.1.3):
     dependencies:
       rescript: 11.1.3
@@ -2483,6 +2676,15 @@ snapshots:
 
   rescript-schema@9.1.0(rescript@11.1.3):
     dependencies:
+=======
+  rescript-envsafe@5.0.0(rescript-schema@9.3.0(rescript@11.1.3))(rescript@11.1.3):
+    dependencies:
+      rescript: 11.1.3
+      rescript-schema: 9.3.0(rescript@11.1.3)
+
+  rescript-schema@9.3.0(rescript@11.1.3):
+    optionalDependencies:
+>>>>>>> Stashed changes
       rescript: 11.1.3
 
   rescript@11.1.3: {}
@@ -2505,7 +2707,11 @@ snapshots:
       loose-envify: 1.4.0
       object-assign: 4.1.1
 
+<<<<<<< Updated upstream
   scheduler@0.25.0: {}
+=======
+  scheduler@0.26.0: {}
+>>>>>>> Stashed changes
 
   secure-json-parse@2.7.0: {}
 
@@ -2542,7 +2748,11 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
+<<<<<<< Updated upstream
   shell-quote@1.8.2: {}
+=======
+  shell-quote@1.8.3: {}
+>>>>>>> Stashed changes
 
   side-channel-list@1.0.0:
     dependencies:
@@ -2551,16 +2761,28 @@ snapshots:
 
   side-channel-map@1.0.1:
     dependencies:
+<<<<<<< Updated upstream
       call-bound: 1.0.3
       es-errors: 1.3.0
       get-intrinsic: 1.2.7
+=======
+      call-bound: 1.0.4
+      es-errors: 1.3.0
+      get-intrinsic: 1.3.0
+>>>>>>> Stashed changes
       object-inspect: 1.13.4
 
   side-channel-weakmap@1.0.2:
     dependencies:
+<<<<<<< Updated upstream
       call-bound: 1.0.3
       es-errors: 1.3.0
       get-intrinsic: 1.2.7
+=======
+      call-bound: 1.0.4
+      es-errors: 1.3.0
+      get-intrinsic: 1.3.0
+>>>>>>> Stashed changes
       object-inspect: 1.13.4
       side-channel-map: 1.0.1
 
@@ -2642,8 +2864,11 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
+<<<<<<< Updated upstream
   tr46@0.0.3: {}
 
+=======
+>>>>>>> Stashed changes
   ts-mocha@10.0.0(mocha@10.2.0):
     dependencies:
       mocha: 10.2.0
@@ -2742,6 +2967,7 @@ snapshots:
       '@noble/curves': 1.4.0
       '@noble/hashes': 1.4.0
 
+<<<<<<< Updated upstream
   webidl-conversions@3.0.1: {}
 
   whatwg-url@5.0.0:
@@ -2749,6 +2975,8 @@ snapshots:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
 
+=======
+>>>>>>> Stashed changes
   widest-line@3.1.0:
     dependencies:
       string-width: 4.2.3

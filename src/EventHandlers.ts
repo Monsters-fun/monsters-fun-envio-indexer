@@ -20,6 +20,8 @@ import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/G
 
 import { WIN_POINTS_MULTIPLIER, TRADE_POINTS_MULTIPLIER, MONSTER_XP_MULTIPLIER } from "./constants";
 
+const WEI_TO_ETHER = new BigDecimal("1e18");
+
 CreatureBoringToken.OwnershipTransferred.handler(async ({ event, context }) => {
   const { newOwner } = event.params;
   const { srcAddress } = event
@@ -158,21 +160,24 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
   if (!monster) {    
     context.log.error("Trade event emitted for a non existent monster")
     return;
-  } else {
-    const supply = isBuy ? monster.supply + amount : monster.supply - amount;
-    const depositsTotal = isBuy ? monster.depositsTotal + ethAmount : monster.depositsTotal; 
-    const withdrawalsTotal = isBuy ? monster.withdrawalsTotal : monster.withdrawalsTotal + ethAmount;
-    const experiencePointsChange =  new BigDecimal((ethAmount * BigInt(MONSTER_XP_MULTIPLIER)).toString())
-    const experiencePoints = isBuy ? monster.experiencePoints.plus(experiencePointsChange) : monster.experiencePoints.minus(experiencePointsChange)
+  }
 
-    monster = {
-      ...monster,
-      supply: supply,      
-      totalVolumeTraded: monster.totalVolumeTraded + ethAmount,
-      depositsTotal: depositsTotal,
-      withdrawalsTotal: withdrawalsTotal,
-      experiencePoints: experiencePoints, 
-    }
+  // Convert to ether for experience points calculation only
+  const ethAmountInEther = new BigDecimal(ethAmount.toString()).dividedBy(WEI_TO_ETHER);
+  
+  const supply = isBuy ? monster.supply + amount : monster.supply - amount;
+  const depositsTotal = isBuy ? monster.depositsTotal + ethAmount : monster.depositsTotal; 
+  const withdrawalsTotal = isBuy ? monster.withdrawalsTotal : monster.withdrawalsTotal + ethAmount;
+  const experiencePointsChange = ethAmountInEther.multipliedBy(MONSTER_XP_MULTIPLIER)
+  const experiencePoints = isBuy ? monster.experiencePoints.plus(experiencePointsChange) : monster.experiencePoints.minus(experiencePointsChange)
+
+  monster = {
+    ...monster,
+    supply: supply,      
+    totalVolumeTraded: monster.totalVolumeTraded + ethAmount,
+    depositsTotal: depositsTotal,
+    withdrawalsTotal: withdrawalsTotal,
+    experiencePoints: experiencePoints, 
   }
 
   context.Monster.set(monster);
@@ -270,12 +275,20 @@ CreatureBoringToken.PriceUpdate.handler(async ({event, context}) => {
   const monster = await context.Monster.get(srcAddress);
 
   if (monster) {
-    updateMonster(context, monster, {price: new BigDecimal(newPrice.toString()), marketCap: new BigDecimal(newPrice.toString()).multipliedBy(tokenSupply.toString())}) 
+    const priceInEther = new BigDecimal(newPrice.toString()).dividedBy(WEI_TO_ETHER);
+    const supplyInEther = new BigDecimal(tokenSupply.toString()).dividedBy(WEI_TO_ETHER);
+    const marketCapInEther = priceInEther.multipliedBy(supplyInEther);
+    
+    updateMonster(context, monster, {
+      price: priceInEther, 
+      marketCap: marketCapInEther
+    }) 
+    
     context.PriceSnapShot.set({
       id: hash + "-" + logIndex,
       monster: srcAddress,
       timestamp: BigInt(timestamp),
-      price: new BigDecimal(newPrice.toString()),
+      price: priceInEther,
     })
   } else {
     context.log.warn(`Trying to update price on non existent monster: ${srcAddress}`)  
