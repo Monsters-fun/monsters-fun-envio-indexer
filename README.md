@@ -265,3 +265,121 @@ query MyQuery {
     price    
   }
 }
+```
+
+## NFT Staking Queries
+
+The indexer also supports NFT staking functionality on chain Abstract Mainnet (2741). Below are the most useful queries for building leaderboards and user profiles.
+
+### Complete leaderboard
+
+Get all users ordered by total points (recommended for up to 3000 users)
+
+```graphql
+query Leaderboard {
+  UserStats(
+    order_by: {totalPoints: desc}
+    where: {totalPoints: {_gt: "0"}}
+  ) {
+    userAddress
+    totalPoints
+    historicalPoints
+    currentActivePoints
+    activeStakesCount
+    quantityTier
+    pointsPerSecond
+    lastUpdatedAt
+  }
+}
+```
+
+### User profile with stakes
+
+Get detailed information for a specific user including their staking history
+
+```graphql
+query UserProfile($userAddress: String!) {
+  UserStats(where: {userAddress: {_eq: $userAddress}}) {
+    userAddress
+    totalPoints
+    historicalPoints
+    currentActivePoints
+    activeStakesCount
+    totalStakesCount
+    quantityTier
+    pointsPerSecond
+    lastUpdatedAt
+  }
+  
+  Stake(where: {owner: {_eq: $userAddress}}) {
+    tokenId
+    stakedAt
+    unstakedAt
+    isActive
+    earnedPoints
+  }
+}
+```
+
+### Staking overview
+
+Get top users and recent staking activity for dashboard views
+
+```graphql
+query StakingOverview {
+  # Top 10 users by points
+  topUsers: UserStats(
+    order_by: {totalPoints: desc}
+    limit: 10
+    where: {totalPoints: {_gt: "0"}}
+  ) {
+    userAddress
+    totalPoints
+    activeStakesCount
+    quantityTier
+  }
+  
+  # Recent staking activity
+  recentStakes: Stake(
+    order_by: {stakedAt: desc}
+    limit: 20
+    where: {isActive: {_eq: true}}
+  ) {
+    tokenId
+    owner
+    stakedAt
+  }
+}
+```
+
+### Points calculation
+
+- **Base rate**: ~1 point every 5 seconds per NFT (0.2 points/second per NFT)
+- **Quantity bonuses**: 
+  - 5-9 NFTs: 1.2x multiplier (tier 1)
+  - 10+ NFTs: 1.5x multiplier (tier 2)
+- **Points per second**: Total earning rate for all active NFTs combined, stored as milli-points (divide by 1000 for actual rate)
+- **Emergency withdrawals**: Earn 0 points (penalty for early exit)
+
+### Real-time points calculation
+
+To get a user's current points including live accrual from active stakes:
+
+```javascript
+// From the UserProfile query above
+const user = data.UserStats[0];
+const currentTimestamp = Math.floor(Date.now() / 1000); // Current Unix timestamp
+
+// Calculate time since last update
+const timeSinceUpdate = currentTimestamp - Number(user.lastUpdatedAt);
+
+// Calculate bonus points from active stakes
+const bonusPoints = (timeSinceUpdate * Number(user.pointsPerSecond)) / 1000;
+
+// Real-time total points
+const realTimePoints = Number(user.totalPoints) + bonusPoints;
+
+console.log(`User has ${realTimePoints.toFixed(0)} points right now`);
+```
+
+**Note**: The indexer updates `UserStats` on every stake/unstake event, so the live calculation is only needed for displaying real-time accrual between events.
