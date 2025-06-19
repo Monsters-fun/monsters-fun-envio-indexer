@@ -1,40 +1,65 @@
 # yaml-language-server: $schema=./node_modules/envio/evm.schema.json
 name: monsters.fun
-networks:
-- id: 11124
-  start_block: 8963740
-  rpc: https://api.testnet.abs.xyz  
-  contracts:
+#######################################################
+# GLOBAL CONTRACT DEFINITIONS
+#######################################################
+contracts:
+  # ————————————————— 11124 contracts —————————————————
   - name: CreatureBoringFactory
-    address:
-    - 0x5D2806990a82ADDA3145edf9F11BED42857De48F
     handler: src/EventHandlers.ts
     events:
-    - event: event TokenCreated(address tokenAddress, string name, string symbol)
-  - name: CreatureBoringToken    
+      - event: event TokenCreated(address tokenAddress, string name, string symbol)
+
+  - name: CreatureBoringToken
     handler: src/EventHandlers.ts
     events:
-    - event: BattleStarted(address indexed opponent)
-    - event: BattleEnded(address indexed winner, address indexed loser, uint256 transferredValue)
-      field_selection:  
-        transaction_fields: 
-        - "hash"   
-    - event: Trade(address indexed trader, bool isBuy, uint256 amount, uint256 ethAmount, uint256 protocolFee)
-      field_selection:  
-        transaction_fields: 
-        - "hash"         
-    - event: Transfer(address indexed from, address indexed to, uint256 value)
-      field_selection:  
-        transaction_fields: 
-        - "hash"         
-    - event: PriceUpdate(uint256 newPrice, uint256 tokenSupply, uint256 curveMultiplierValue)
-      field_selection:  
-        transaction_fields: 
-        - "hash"   
-    - event: OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
-    - event: Paused(address account)
-    - event: Unpaused(address account)
-# raw_events: true
-    # - event: Approval(address indexed owner, address indexed spender, uint256 value)
-    # - event: TokensMigrated(address indexed account, uint256 amount)
-    # - event: WhitelistPurchase(address indexed buyer, uint256 amount)
+      - event: BattleStarted(address indexed opponent)
+      - event: BattleEnded(address indexed winner, address indexed loser, uint256 transferredValue)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: Trade(address indexed trader, bool isBuy, uint256 amount, uint256 ethAmount, uint256 protocolFee)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: Transfer(address indexed from, address indexed to, uint256 value)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: PriceUpdate(uint256 newPrice, uint256 tokenSupply, uint256 curveMultiplierValue)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+      - event: Paused(address account)
+      - event: Unpaused(address account)
+
+  # ————————————————— 2741 contract —————————————————
+  - name: NFTStaking
+    handler: src/EventHandlers.ts
+    events:
+      - event: Staked(address indexed owner, uint256 tokenId, uint256 timestamp)
+      - event: Unstaked(address indexed owner, uint256 tokenId, uint256 timestamp, uint256 stakingDuration)
+      - event: EmergencyWithdraw(address indexed owner, uint256 tokenId, address recipient)
+
+#######################################################
+# MULTICHAIN SETTINGS
+#######################################################
+unordered_multichain_mode: true
+
+networks:
+  # ---------- ABS testnet ----------
+  - id: 11124
+    start_block: 8963740
+    rpc: https://api.testnet.abs.xyz
+    contracts:
+      - name: CreatureBoringFactory
+        address: "0x5D2806990a82ADDA3145edf9F11BED42857De48F"
+      - name: CreatureBoringToken
+
+  # ---------- ABS mainnet ----------
+  - id: 2741
+    start_block: 10391466
+    contracts:
+      - name: NFTStaking
+        address: "0x0FB5663424320838bf46dc70f094c5E249b0dB65"

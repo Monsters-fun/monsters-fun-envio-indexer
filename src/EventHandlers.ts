@@ -1,3 +1,5 @@
+import "./handlers";
+
 import {
   CreatureBoringFactory,
   CreatureBoringToken,
@@ -14,7 +16,7 @@ import {
 
 import { createOrUpdateHoldingsTransfer, updateHoldingsTrade } from "./helpers/Holdings";
 
-import { createMonster, updateMonster, requireMonster } from "./helpers/monster";
+import { createMonster, updateMonster } from "./helpers/monster";
 
 import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/GlobalStats";
 
