@@ -383,3 +383,234 @@ console.log(`User has ${realTimePoints.toFixed(0)} points right now`);
 ```
 
 **Note**: The indexer updates `UserStats` on every stake/unstake event, so the live calculation is only needed for displaying real-time accrual between events.
+
+## MonsterCapsule NFT Tracking
+
+The indexer tracks MonsterCapsule NFT ownership, transfers, and staking status on Abstract Mainnet (2741). This enables efficient querying of NFT holders, their collections, and staking states without complex wallet scanning.
+
+### Core entities
+
+- **Capsule**: Individual NFT with metadata (type, owner, staking status)
+- **CapsuleHolder**: Aggregated holder data with capsule counts and statistics
+
+### Get user's complete NFT collection
+
+Get all NFTs owned by a specific user with counts and staking breakdown
+
+```graphql
+query GetUserCapsules($userAddress: String!) {
+  capsuleHolder(id: $userAddress) {
+    id
+    totalCapsules
+    stakedCapsules
+    capsules {
+      id
+      tokenId
+      capsuleType
+      ownerAddress
+      isStaked
+    }
+  }
+}
+```
+
+**Variables:**
+```json
+{
+  "userAddress": "0x1234567890abcdef1234567890abcdef12345678"
+}
+```
+
+### Get only staked NFTs
+
+Retrieve NFTs currently being staked by a user
+
+```graphql
+query GetUserStakedCapsules($userAddress: String!) {
+  capsules(where: { ownerAddress: $userAddress, isStaked: true }) {
+    id
+    tokenId
+    capsuleType
+    ownerAddress
+    isStaked
+  }
+}
+```
+
+### Get only unstaked NFTs
+
+Retrieve NFTs available for staking or trading
+
+```graphql
+query GetUserUnstakedCapsules($userAddress: String!) {
+  capsules(where: { ownerAddress: $userAddress, isStaked: false }) {
+    id
+    tokenId
+    capsuleType
+    ownerAddress
+    isStaked
+  }
+}
+```
+
+### Get user's token IDs by staking status
+
+Lightweight query to get both staked and unstaked token IDs for efficient processing
+
+```graphql
+query GetUserTokenIds($userAddress: String!) {
+  stakedTokens: capsules(where: { ownerAddress: $userAddress, isStaked: true }) {
+    tokenId
+  }
+  unstakedTokens: capsules(where: { ownerAddress: $userAddress, isStaked: false }) {
+    tokenId
+  }
+}
+```
+
+**Usage:**
+```javascript
+const stakedIds = data.stakedTokens.map(t => t.tokenId);
+const unstakedIds = data.unstakedTokens.map(t => t.tokenId);
+```
+
+### NFT collection overview
+
+Get collection statistics and top holders for dashboard views
+
+```graphql
+query CapsuleOverview {
+  # Top holders by total capsules
+  topHolders: CapsuleHolder(
+    order_by: {totalCapsules: desc}
+    limit: 10
+    where: {totalCapsules: {_gt: 0}}
+  ) {
+    id
+    totalCapsules
+    stakedCapsules
+  }
+  
+  # Recently minted capsules
+  recentMints: Capsule(
+    order_by: {tokenId: desc}
+    limit: 20
+  ) {
+    id
+    tokenId
+    capsuleType
+    ownerAddress
+    isStaked
+  }
+}
+```
+
+### Find NFT owner
+
+Quickly find who owns a specific NFT
+
+```graphql
+query GetCapsuleOwner($tokenId: String!) {
+  capsule(id: $tokenId) {
+    id
+    tokenId
+    capsuleType
+    ownerAddress
+    isStaked
+    owner {
+      id
+      totalCapsules
+      stakedCapsules
+    }
+  }
+}
+```
+
+### Collection analytics by type
+
+Analyze distribution and staking rates by capsule type
+
+```graphql
+query CapsuleTypeAnalytics {
+  # Group by type for analytics
+  capsules {
+    capsuleType
+    isStaked
+    ownerAddress
+  }
+}
+```
+
+### Holder leaderboard
+
+Get users ranked by their NFT collection size
+
+```graphql
+query HolderLeaderboard {
+  CapsuleHolder(
+    order_by: [
+      {totalCapsules: desc},
+      {stakedCapsules: desc}
+    ]
+    where: {totalCapsules: {_gt: 0}}
+    limit: 50
+  ) {
+    id
+    totalCapsules
+    stakedCapsules
+  }
+}
+```
+
+### Advanced holder insights
+
+Get detailed holder information with calculated metrics
+
+```graphql
+query HolderInsights($userAddress: String!) {
+  capsuleHolder(id: $userAddress) {
+    id
+    totalCapsules
+    stakedCapsules
+    capsules {
+      id
+      tokenId
+      capsuleType
+      isStaked
+    }
+  }
+}
+```
+
+### Real-time collection metrics
+
+Calculate unstaked capsules and staking rate:
+
+```javascript
+// From the GetUserCapsules query above
+const holder = data.capsuleHolder;
+
+if (holder) {
+  const unstakedCapsules = holder.totalCapsules - holder.stakedCapsules;
+  const stakingRate = (holder.stakedCapsules / holder.totalCapsules) * 100;
+  
+  console.log(`User owns ${holder.totalCapsules} capsules`);
+  console.log(`${holder.stakedCapsules} staked, ${unstakedCapsules} available`);
+  console.log(`Staking rate: ${stakingRate.toFixed(1)}%`);
+  
+  // Group by type
+  const typeDistribution = holder.capsules.reduce((acc, capsule) => {
+    acc[capsule.capsuleType] = (acc[capsule.capsuleType] || 0) + 1;
+    return acc;
+  }, {});
+  
+  console.log('Collection by type:', typeDistribution);
+}
+```
+### Key features
+
+- **Direct address access**: `ownerAddress` field enables fast queries without joins
+- **Pre-calculated counts**: `totalCapsules` and `stakedCapsules` for instant statistics
+- **Type metadata**: Capsule rarity and traits automatically indexed
+- **Staking integration**: Seamless tracking of staked vs available NFTs
+- **Efficient indexing**: Optimized for wallet scanning and collection analysis
