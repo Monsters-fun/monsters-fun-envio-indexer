@@ -156,3 +156,26 @@ type UserStats @entity {
   # Quantity bonus tier (for UI display)
   quantityTier: Int! # 0 = no bonus, 1 = 1.2x, 2 = 1.5x
 }
+
+# ================================
+# MonsterCapsule contract entities
+# ================================
+
+type Capsule @entity {
+  id: ID! # tokenId
+  tokenId: BigInt!
+  capsuleType: String! # The single trait for the capsule
+  owner: CapsuleHolder! # The current owner
+  ownerAddress: String! @index # Direct access to owner address (lowercase)
+  isStaked: Boolean! # True if the capsule is currently staked
+}
+
+type CapsuleHolder @entity {
+  id: ID! # address of the user
+  capsules: [Capsule!]! @derivedFrom(field: "owner")
+  
+  # Capsule counts
+  totalCapsules: Int! # Total capsules owned
+  stakedCapsules: Int! # Capsules currently staked
+  # unstakedCapsules can be calculated as: totalCapsules - stakedCapsules
+}

@@ -34,13 +34,18 @@ contracts:
       - event: Paused(address account)
       - event: Unpaused(address account)
 
-  # ————————————————— 2741 contract —————————————————
+  # ————————————————— 2741 contracts —————————————————
   - name: NFTStaking
     handler: src/EventHandlers.ts
     events:
       - event: Staked(address indexed owner, uint256 tokenId, uint256 timestamp)
       - event: Unstaked(address indexed owner, uint256 tokenId, uint256 timestamp, uint256 stakingDuration)
       - event: EmergencyWithdraw(address indexed owner, uint256 tokenId, address recipient)
+
+  - name: MonsterCapsule
+    handler: src/EventHandlers.ts
+    events:
+      - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 
 #######################################################
 # MULTICHAIN SETTINGS
@@ -59,7 +64,9 @@ networks:
 
   # ---------- ABS mainnet ----------
   - id: 2741
-    start_block: 10391466
+    start_block: 9349083
     contracts:
       - name: NFTStaking
         address: "0x0FB5663424320838bf46dc70f094c5E249b0dB65"
+      - name: MonsterCapsule
+        address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"

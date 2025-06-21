@@ -1,3 +1,4 @@
 // Centralized export/initialization of all handler modules.
 
-import "./staking";
+import "./NFTStaking";
+import "./MonsterCapsule";

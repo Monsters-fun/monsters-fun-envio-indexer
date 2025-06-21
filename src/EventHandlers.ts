@@ -14,11 +14,11 @@ import {
   BigDecimal,
 } from "generated";
 
-import { createOrUpdateHoldingsTransfer, updateHoldingsTrade } from "./helpers/Holdings";
+import { createOrUpdateHoldingsTransfer, updateHoldingsTrade } from "./helpers/holdings";
 
 import { createMonster, updateMonster } from "./helpers/monster";
 
-import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/GlobalStats";
+import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/globalStats";
 
 import { WIN_POINTS_MULTIPLIER, TRADE_POINTS_MULTIPLIER, MONSTER_XP_MULTIPLIER } from "./constants";
 
