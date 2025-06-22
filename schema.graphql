@@ -74,7 +74,7 @@ type Trade {
     tradeType: TradeType!
     amount: BigDecimal! @index # Token amount in ETH
     ethAmount: BigDecimal! @index # ETH amount in ETH
-    blockTimestamp: BigInt! @index # Timestamp for 24-hour Data Queries # todo: make this an Int
+    blockTimestamp: BigInt! @index # Timestamp for 24-hour queries
     blockNumber: BigInt! 
 }
 
@@ -126,35 +126,45 @@ type GlobalStats {
 # NFTStaking contract entities
 # ================================
 
-type Stake @entity {
+# Individual stake representing a single staked NFT
+type ActiveStake @entity {
   id: ID! # tokenId
-  tokenId: BigInt!
+  nftId: String! # tokenId as string
   owner: String! @index # Address of the NFT owner
-  stakedAt: BigInt! # Timestamp when the token was staked
-  unstakedAt: BigInt # Timestamp when the token was unstaked. Null when still active
-  isActive: Boolean! # True while the token remains staked
-
-  # Points earned by this specific NFT (calculated on unstake)
-  earnedPoints: BigInt!
+  stakeTimestamp: BigDecimal! # Unix timestamp when staked
 }
 
-type UserStats @entity {
-  id: ID! # User address
-  userAddress: String! @index # Redundant field for convenience queries
+# Staker entity for real-time point calculations
+type Staker @entity {
+  id: ID! # Staker address
+  stakerId: String! @index # Staker address (redundant for queries)
+  
+  # Real-time calculation fields
+  pointsAtLastUpdate: BigDecimal! @index # Points balance at last event
+  currentPointsPerSecond: BigDecimal! @index # Current earning rate
+  lastUpdateTimestamp: BigDecimal! # Unix timestamp of last update
+  
+  # Bonus system
+  bonusTier: Int! @index # Bonus tier: 0 (no bonus), 1 (2+ NFTs), 2 (5+ NFTs), 3 (10+ NFTs)
+  
+  # Active stakes list
+  activeStakes: [ActiveStake!]! @derivedFrom(field: "owner")
+  activeStakesCount: Int! @index # Number of currently staked NFTs
+  
+  # Statistics
+  totalStakesCount: Int! # All-time number of stakes
+}
 
-  # Points breakdown
-  historicalPoints: BigInt! # Points from NFTs that have been unstaked
-  currentActivePoints: BigInt! # Live points from active stakes
-  totalPoints: BigInt! # historicalPoints + currentActivePoints
-
-  # Realtime counters
-  activeStakesCount: Int! # Number of currently staked NFTs
-  totalStakesCount: Int! # All-time number of stakes by the user
-  pointsPerSecond: BigInt! # Current earning rate based on active stakes
-  lastUpdatedAt: BigInt! # Timestamp of the last update of this entity
-
-  # Quantity bonus tier (for UI display)
-  quantityTier: Int! # 0 = no bonus, 1 = 1.2x, 2 = 1.5x
+# Event log for historical tracking (needed for forfeiture calculations)
+type StakingEvent @entity {
+  id: ID! # eventId (txHash-logIndex)
+  eventId: String! # Same as id
+  stakerId: String! @index # Staker address
+  eventType: String! # 'STAKE' or 'UNSTAKE'
+  nftId: String! # tokenId as string
+  timestamp: BigDecimal! # Unix timestamp
+  blockNumber: BigInt! # Block number for ordering
+  transactionHash: String! # Transaction hash
 }
 
 # ================================
