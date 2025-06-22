@@ -399,7 +399,7 @@ Get all NFTs owned by a specific user with counts and staking breakdown
 
 ```graphql
 query GetUserCapsules($userAddress: String!) {
-  capsuleHolder(id: $userAddress) {
+  CapsuleHolder(where: { id: { _eq: $userAddress } }) {
     id
     totalCapsules
     stakedCapsules
@@ -427,7 +427,7 @@ Retrieve NFTs currently being staked by a user
 
 ```graphql
 query GetUserStakedCapsules($userAddress: String!) {
-  capsules(where: { ownerAddress: $userAddress, isStaked: true }) {
+  Capsule(where: { ownerAddress: { _eq: $userAddress }, isStaked: { _eq: true } }) {
     id
     tokenId
     capsuleType
@@ -443,7 +443,7 @@ Retrieve NFTs available for staking or trading
 
 ```graphql
 query GetUserUnstakedCapsules($userAddress: String!) {
-  capsules(where: { ownerAddress: $userAddress, isStaked: false }) {
+  Capsule(where: { ownerAddress: { _eq: $userAddress }, isStaked: { _eq: false } }) {
     id
     tokenId
     capsuleType
@@ -459,10 +459,10 @@ Lightweight query to get both staked and unstaked token IDs for efficient proces
 
 ```graphql
 query GetUserTokenIds($userAddress: String!) {
-  stakedTokens: capsules(where: { ownerAddress: $userAddress, isStaked: true }) {
+  stakedTokens: Capsule(where: { ownerAddress: { _eq: $userAddress }, isStaked: { _eq: true } }) {
     tokenId
   }
-  unstakedTokens: capsules(where: { ownerAddress: $userAddress, isStaked: false }) {
+  unstakedTokens: Capsule(where: { ownerAddress: { _eq: $userAddress }, isStaked: { _eq: false } }) {
     tokenId
   }
 }
@@ -511,7 +511,7 @@ Quickly find who owns a specific NFT
 
 ```graphql
 query GetCapsuleOwner($tokenId: String!) {
-  capsule(id: $tokenId) {
+  Capsule(where: { id: { _eq: $tokenId } }) {
     id
     tokenId
     capsuleType
@@ -533,7 +533,7 @@ Analyze distribution and staking rates by capsule type
 ```graphql
 query CapsuleTypeAnalytics {
   # Group by type for analytics
-  capsules {
+  Capsule {
     capsuleType
     isStaked
     ownerAddress
@@ -568,7 +568,7 @@ Get detailed holder information with calculated metrics
 
 ```graphql
 query HolderInsights($userAddress: String!) {
-  capsuleHolder(id: $userAddress) {
+  CapsuleHolder(where: { id: { _eq: $userAddress } }) {
     id
     totalCapsules
     stakedCapsules
@@ -588,7 +588,7 @@ Calculate unstaked capsules and staking rate:
 
 ```javascript
 // From the GetUserCapsules query above
-const holder = data.capsuleHolder;
+const holder = data.CapsuleHolder[0]; // Array result from Hasura
 
 if (holder) {
   const unstakedCapsules = holder.totalCapsules - holder.stakedCapsules;
