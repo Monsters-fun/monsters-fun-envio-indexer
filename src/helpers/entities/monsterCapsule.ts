@@ -5,26 +5,33 @@ import type {
 import { getCapsuleType } from "../monsterCapsule/capsuleMetadata";
 
 /**
- * Create a new Capsule entity
+ * Create and save a new Capsule entity
  */
 export function createMonsterCapsule(
+  context: HandlerContext,
   tokenId: bigint,
   owner: string
 ): Capsule {
   const normalizedOwner = owner.toLowerCase();
   
-  return {
+  const newCapsule: Capsule = {
     id: tokenId.toString(),
     tokenId: tokenId,
     owner_id: normalizedOwner,
     ownerAddress: normalizedOwner,
     isStaked: false,
     capsuleType: getCapsuleType(Number(tokenId)),
+    stakedAt: BigInt(0),
   };
+
+  context.Capsule.set(newCapsule);
+  context.log.info(`[Capsule] Created capsule ${tokenId} for ${normalizedOwner}`);
+  
+  return newCapsule;
 }
 
 /**
- * Update Capsule ownership
+ * Update and save Capsule ownership
  */
 export function updateMonsterCapsuleOwner(
   context: HandlerContext,
@@ -40,26 +47,52 @@ export function updateMonsterCapsuleOwner(
   };
 
   context.Capsule.set(updatedCapsule);
+  context.log.info(`[Capsule] Updated capsule ${capsule.tokenId} owner to ${normalizedOwner}`);
   
   return updatedCapsule;
 }
 
 /**
- * Update Capsule staking status
+ * Update and save Capsule staking status
  */
 export function updateMonsterCapsuleStaking(
   context: HandlerContext,
   capsule: Capsule,
   isStaked: boolean,
-  newOwner?: string
+  timestamp?: number
 ): Capsule {
   const updatedCapsule: Capsule = {
     ...capsule,
     isStaked,
-    ...(newOwner && { owner_id: newOwner.toLowerCase() }),
+    stakedAt: isStaked && timestamp ? BigInt(timestamp) : BigInt(0),
   };
 
   context.Capsule.set(updatedCapsule);
+  context.log.info(`[Capsule] Updated capsule ${capsule.tokenId} staking status to ${isStaked}`);
+  
+  return updatedCapsule;
+}
+
+/**
+ * Update capsule ownership and unstake it
+ */
+export function updateMonsterCapsuleOwnerAndUnstake(
+  context: HandlerContext,
+  capsule: Capsule,
+  newOwner: string
+): Capsule {
+  const normalizedOwner = newOwner.toLowerCase();
+  
+  const updatedCapsule: Capsule = {
+    ...capsule,
+    owner_id: normalizedOwner,
+    ownerAddress: normalizedOwner,
+    isStaked: false,
+    stakedAt: BigInt(0),
+  };
+
+  context.Capsule.set(updatedCapsule);
+  context.log.info(`[Capsule] Updated capsule ${capsule.tokenId} owner to ${normalizedOwner} and unstaked`);
   
   return updatedCapsule;
 }

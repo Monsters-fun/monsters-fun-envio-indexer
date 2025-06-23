@@ -123,51 +123,6 @@ type GlobalStats {
 }
 
 # ================================
-# NFTStaking contract entities
-# ================================
-
-# Individual stake representing a single staked NFT
-type ActiveStake @entity {
-  id: ID! # tokenId
-  nftId: String! # tokenId as string
-  owner: String! @index # Address of the NFT owner
-  stakeTimestamp: BigDecimal! # Unix timestamp when staked
-}
-
-# Staker entity for real-time point calculations
-type Staker @entity {
-  id: ID! # Staker address
-  stakerId: String! @index # Staker address (redundant for queries)
-  
-  # Real-time calculation fields
-  pointsAtLastUpdate: BigDecimal! @index # Points balance at last event
-  currentPointsPerSecond: BigDecimal! @index # Current earning rate
-  lastUpdateTimestamp: BigDecimal! # Unix timestamp of last update
-  
-  # Bonus system
-  bonusTier: Int! @index # Bonus tier: 0 (no bonus), 1 (2+ NFTs), 2 (5+ NFTs), 3 (10+ NFTs)
-  
-  # Active stakes list
-  activeStakes: [ActiveStake!]! @derivedFrom(field: "owner")
-  activeStakesCount: Int! @index # Number of currently staked NFTs
-  
-  # Statistics
-  totalStakesCount: Int! # All-time number of stakes
-}
-
-# Event log for historical tracking (needed for forfeiture calculations)
-type StakingEvent @entity {
-  id: ID! # eventId (txHash-logIndex)
-  eventId: String! # Same as id
-  stakerId: String! @index # Staker address
-  eventType: String! # 'STAKE' or 'UNSTAKE'
-  nftId: String! # tokenId as string
-  timestamp: BigDecimal! # Unix timestamp
-  blockNumber: BigInt! # Block number for ordering
-  transactionHash: String! # Transaction hash
-}
-
-# ================================
 # MonsterCapsule contract entities
 # ================================
 
@@ -178,6 +133,7 @@ type Capsule @entity {
   owner: CapsuleHolder! # The current owner
   ownerAddress: String! @index # Direct access to owner address (lowercase)
   isStaked: Boolean! # True if the capsule is currently staked
+  stakedAt: BigInt! # Unix timestamp when staked
 }
 
 type CapsuleHolder @entity {
@@ -187,5 +143,7 @@ type CapsuleHolder @entity {
   # Capsule counts
   totalCapsules: Int! # Total capsules owned
   stakedCapsules: Int! # Capsules currently staked
-  # unstakedCapsules can be calculated as: totalCapsules - stakedCapsules
+
+  stakingBonusTier: Int! # Staking bonus tier: 0 (no bonus), 1 (2+ NFTs), 2 (5+ NFTs), 3 (10+ NFTs)
+  pointsPerSecond: Float! # The calculated rate of points earned per second based on the current state
 }

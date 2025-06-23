@@ -8,43 +8,22 @@ import {
   ZERO_ADDRESS,
 } from "../../constants";
 import {
-  getOrCreateCapsuleHolder,
-  shouldExcludeFromHolderTracking,
+  updateHolderStats,
+} from "../entities/capsuleHolder";
+import {
   createMonsterCapsule,
   updateMonsterCapsuleOwner,
   updateMonsterCapsuleStaking,
+  updateMonsterCapsuleOwnerAndUnstake,
   deleteMonsterCapsule,
-} from "../entities";
-
-type CountChange = 1 | -1 | 0;
-
-/**
- * Update holder capsule counts with preloaded optimization
- */
-export async function updateHolderCounts(
-  context: HandlerContext,
-  holderAddress: string,
-  totalChange: CountChange,
-  stakedChange: CountChange,
-  preloadedHolder?: CapsuleHolder
-): Promise<void> {
-  if (shouldExcludeFromHolderTracking(holderAddress)) return;
-
-  const holder = preloadedHolder ?? await getOrCreateCapsuleHolder(context, holderAddress);
-
-  const updatedHolder: CapsuleHolder = {
-    ...holder,
-    totalCapsules: Math.max(0, holder.totalCapsules + totalChange),
-    stakedCapsules: Math.max(0, holder.stakedCapsules + stakedChange),
-  };
-
-  context.CapsuleHolder.set(updatedHolder);
-}
+} from "../entities/monsterCapsule";
 
 // --- Logic Handlers ---
 
 export async function handleStaking(
   context: HandlerContext,
+  event: any,
+  fromAddress: string,
   tokenId: bigint,
   capsule: Capsule | undefined,
   fromHolder?: CapsuleHolder
@@ -58,25 +37,18 @@ export async function handleStaking(
   
   context.log.info(`[MC-Stake] BEFORE: Token ${tokenId} isStaked=${capsule.isStaked}, owner=${capsule.ownerAddress}`);
   
-  // Create updated capsule with staked status
-  const updatedCapsule: Capsule = {
-    ...capsule,
-    isStaked: true,
-    // owner_id and ownerAddress stay the same - we don't want the staking contract as owner
-  };
+  // Update capsule staking status
+  updateMonsterCapsuleStaking(context, capsule, true, event.block.timestamp);
   
-  // Save the updated capsule
-  context.Capsule.set(updatedCapsule);
+  // Update holder stats: no change in total, +1 staked
+  await updateHolderStats(context, fromAddress, 0, 1, fromHolder);
   
-  // Update holder counts
-  await updateHolderCounts(context, capsule.ownerAddress, 0, 1, fromHolder);
-  
-  context.log.info(`[MC-Stake] AFTER: Token ${tokenId} isStaked=${updatedCapsule.isStaked}, owner=${updatedCapsule.ownerAddress}`);
-  context.log.info(`[MC-Transfer] Staked token ${tokenId}. Holder: ${capsule.ownerAddress}`);
+  context.log.info(`[MC-Stake] Staked token ${tokenId} for ${fromAddress}`);
 }
 
 export async function handleUnstaking(
   context: HandlerContext,
+  event: any,
   toAddress: string,
   tokenId: bigint,
   capsule: Capsule | undefined,
@@ -89,26 +61,15 @@ export async function handleUnstaking(
     return;
   }
   
-  context.log.info(`[MC-Unstake] BEFORE: Token ${tokenId} isStaked=${capsule.isStaked}, owner=${capsule.ownerAddress}`);
+  context.log.info(`[MC-Unstake] BEFORE: Token ${tokenId} isStaked=${capsule.isStaked}, owner=${capsule.ownerAddress}, stakedAt=${capsule.stakedAt}`);
   
-  const normalizedToAddress = toAddress.toLowerCase();
+  // Update capsule: change owner and unstake
+  updateMonsterCapsuleOwnerAndUnstake(context, capsule, toAddress);
   
-  // Create updated capsule with unstaked status and correct owner
-  const updatedCapsule: Capsule = {
-    ...capsule,
-    isStaked: false,
-    owner_id: normalizedToAddress, // Update owner relation
-    ownerAddress: normalizedToAddress, // Update direct address access
-  };
+  // Update holder stats: +1 total, -1 staked for the receiver
+  await updateHolderStats(context, toAddress, 1, -1, toHolder);
   
-  // Save the updated capsule
-  context.Capsule.set(updatedCapsule);
-  
-  // Update holder counts (+1 total, -1 staked for the receiver)
-  await updateHolderCounts(context, normalizedToAddress, 1, -1, toHolder);
-  
-  context.log.info(`[MC-Unstake] AFTER: Token ${tokenId} isStaked=${updatedCapsule.isStaked}, owner=${updatedCapsule.ownerAddress}`);
-  context.log.info(`[MC-Transfer] Unstaked token ${tokenId} to ${normalizedToAddress}`);
+  context.log.info(`[MC-Unstake] Unstaked token ${tokenId} to ${toAddress}`);
 }
 
 export async function handleMint(
@@ -117,13 +78,13 @@ export async function handleMint(
   tokenId: bigint,
   toHolder?: CapsuleHolder
 ): Promise<void> {
-  const newCapsule = createMonsterCapsule(tokenId, toAddress);
-  context.Capsule.set(newCapsule);
+  // Create new capsule
+  createMonsterCapsule(context, tokenId, toAddress);
   
-  // Update holder counts (+1 total, no change in staked)
-  await updateHolderCounts(context, toAddress, 1, 0, toHolder);
+  // Update holder stats: +1 total, no change in staked
+  await updateHolderStats(context, toAddress, 1, 0, toHolder);
   
-  context.log.info(`[MC-Transfer] Minted token ${tokenId} to ${toAddress.toLowerCase()}`);
+  context.log.info(`[MC-Transfer] Minted token ${tokenId} to ${toAddress}`);
 }
 
 export async function handleBurn(
@@ -133,14 +94,15 @@ export async function handleBurn(
   fromHolder?: CapsuleHolder,
   capsule?: Capsule
 ): Promise<void> {
+  // Delete capsule
   deleteMonsterCapsule(context, tokenId);
   
   // Determine if the burned capsule was staked
   const wasStaked = capsule?.isStaked ?? false;
-  const stakedChange: CountChange = wasStaked ? -1 : 0;
+  const stakedChange = wasStaked ? -1 : 0;
   
-  // Update holder counts (-1 total, -1 staked if it was staked)
-  await updateHolderCounts(context, fromAddress, -1, stakedChange, fromHolder);
+  // Update holder stats: -1 total, -1 staked if it was staked
+  await updateHolderStats(context, fromAddress, -1, stakedChange, fromHolder);
   
   context.log.info(`[MC-Transfer] Burned token ${tokenId} (was staked: ${wasStaked})`);
 }
@@ -154,42 +116,43 @@ export async function handleRegularTransfer(
   fromHolder?: CapsuleHolder,
   toHolder?: CapsuleHolder
 ): Promise<void> {
-  const normalizedFromAddress = fromAddress.toLowerCase();
-  const normalizedToAddress = toAddress.toLowerCase();
-  
   if (!capsule) {
     // First seen transfer - create capsule entity
-    const newCapsule = createMonsterCapsule(tokenId, normalizedToAddress);
-    context.Capsule.set(newCapsule);
+    createMonsterCapsule(context, tokenId, toAddress);
     context.log.warn(
       `[MC-Transfer] First seen transfer for token ${tokenId}. Created entity.`
     );
+    
+    // Only update receiver stats: +1 total, no change in staked
+    await updateHolderStats(context, toAddress, 1, 0, toHolder);
   } else {
     // Regular transfer - update ownership
-    const updatedCapsule: Capsule = {
-      ...capsule,
-      owner_id: normalizedToAddress,
-      ownerAddress: normalizedToAddress,
-    };
-    context.Capsule.set(updatedCapsule);
+    updateMonsterCapsuleOwner(context, capsule, toAddress);
+    
+    // Determine if the transferred capsule is staked
+    const isStaked = capsule.isStaked;
+    const stakedChange = isStaked ? 1 : 0;
+    
+    // Update holder stats for both parties
+    await Promise.all([
+      updateHolderStats(context, fromAddress, -1, isStaked ? -1 : 0, fromHolder),
+      updateHolderStats(context, toAddress, 1, stakedChange, toHolder)
+    ]);
     
     context.log.info(
-      `[MC-Transfer] Transferred token ${tokenId} from ${normalizedFromAddress} to ${normalizedToAddress}`
+      `[MC-Transfer] Transferred token ${tokenId} from ${fromAddress} to ${toAddress} (staked: ${isStaked})`
     );
   }
-  
-  // Determine if the transferred capsule is staked
-  const isStaked = capsule?.isStaked ?? false;
-  const stakedChange: CountChange = isStaked ? 1 : 0;
-  
-  // Update holder counts
-  await updateHolderCounts(context, normalizedFromAddress, -1, isStaked ? -1 : 0, fromHolder);
-  await updateHolderCounts(context, normalizedToAddress, 1, stakedChange, toHolder);
 }
 
 // --- Main Transfer Processor ---
 
+/**
+ * Process a transfer event with pre-normalized addresses
+ * Note: from and to addresses are already normalized (toLowerCase) at the handler level
+ */
 export async function processTransfer(
+  event: any,
   context: HandlerContext,
   from: string,
   to: string,
@@ -198,12 +161,14 @@ export async function processTransfer(
   fromHolder?: CapsuleHolder,
   toHolder?: CapsuleHolder
 ): Promise<void> {
+  context.log.info(`[MC-Transfer] Processing transfer of token ${tokenId} from ${from} to ${to}`);
+  
   if (to === CAPSULE_STAKING_CONTRACT_ADDRESS) {
     // Transfer TO staking contract = User stakes their NFT
-    await handleStaking(context, tokenId, capsule, fromHolder);
+    await handleStaking(context, event, from, tokenId, capsule, fromHolder);
   } else if (from === CAPSULE_STAKING_CONTRACT_ADDRESS) {
     // Transfer FROM staking contract = User unstakes their NFT
-    await handleUnstaking(context, to, tokenId, capsule, toHolder);
+    await handleUnstaking(context, event, to, tokenId, capsule, toHolder);
   } else if (from === ZERO_ADDRESS) {
     // Transfer FROM zero address = New NFT is minted
     await handleMint(context, to, tokenId, toHolder);

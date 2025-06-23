@@ -22,6 +22,7 @@ MonsterCapsule.Transfer.handlerWithLoader({
     const { capsule, fromHolder, toHolder } = loaderReturn;
 
     await processTransfer(
+      event,
       context,
       from.toLowerCase(),
       to.toLowerCase(),
