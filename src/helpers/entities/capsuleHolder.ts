@@ -17,9 +17,14 @@ function calculateStakingBonusTier(stakedCapsules: number): number {
 }
 
 /**
- * Calculate points per second based on staking bonus tier
+ * Calculate points per second based on staking bonus tier and staked capsules count
  */
-function calculatePointsPerSecondFromTier(tier: number): number {
+function calculatePointsPerSecondFromTier(tier: number, stakedCapsules: number): number {
+  // If no capsules are staked, no points are earned
+  if (stakedCapsules === 0) {
+    return 0;
+  }
+  
   const base_rate = 0.2;
   
   let quantity_multiplier = 1.0;
@@ -45,7 +50,7 @@ export async function getOrCreateCapsuleHolder(
     totalCapsules: 0,
     stakedCapsules: 0,
     stakingBonusTier: 0,
-    pointsPerSecond: 0.2, // tier 0 = base rate
+    pointsPerSecond: 0, // Start with 0 since no capsules are staked initially
   });
 }
 
@@ -66,7 +71,7 @@ export async function updateHolderStats(
       totalCapsules: 0,
       stakedCapsules: 0,
       stakingBonusTier: 0,
-      pointsPerSecond: 0.2,
+      pointsPerSecond: 0,
     };
   }
 
@@ -80,10 +85,8 @@ export async function updateHolderStats(
   const newStakedCount = Math.max(0, holder.stakedCapsules + stakedChange);
   const newStakingBonusTier = calculateStakingBonusTier(newStakedCount);
   
-  // Optimization: only recalculate pointsPerSecond when tier changes
-  const newPointsPerSecond = newStakingBonusTier !== holder.stakingBonusTier 
-    ? calculatePointsPerSecondFromTier(newStakingBonusTier)
-    : holder.pointsPerSecond;
+  // Always recalculate pointsPerSecond to handle the 0 staked capsules case correctly
+  const newPointsPerSecond = calculatePointsPerSecondFromTier(newStakingBonusTier, newStakedCount);
 
   const updatedHolder: CapsuleHolder = {
     ...holder,
