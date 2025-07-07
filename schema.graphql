@@ -115,6 +115,7 @@ type WhitelistPurchaseSnapshot {
     trader: String! @index    
     timestamp: Int! @index
     ethAmountPurchased: BigDecimal! # Amount in ETH
+    tokenAmount: BigDecimal! # Token amount purchased
 }
 
 type GlobalStats {

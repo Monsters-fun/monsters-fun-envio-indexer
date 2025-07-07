@@ -189,46 +189,39 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
 
   context.Monster.set(monster);
     
-  const tradeId = hash + "-" + (logIndex - 1) + "-" + trader; // we subtract 1 from the logIndex as that is the logIndex of the transfer event due to the trade
-  let trade: Trade | undefined = await context.Trade.get(tradeId);
-
-  if (!trade) {
-    // this is a whitelist trade
-    const tradeId = hash + "-" + (logIndex - 2) + "-" + trader; // we subtract 2 from the logIndex as that is the logIndex of the transfer event due to the trade during a whitelist trade event
-    let whitelistedTrade : Trade | undefined = await context.Trade.get(tradeId);
-
-    if (!whitelistedTrade) {
-      console.log(trader)
-      console.log(hash)    
-      context.log.warn("This case shouldn't be possible")    
-    } else {
-      whitelistedTrade = {
-        ...whitelistedTrade,
-        tradeType: isBuy ? "BUY" : "SELL", // I believe this will only ever be a buy
-        logIndexTrade: logIndex,
-        ethAmount: ethAmountInEth,      
-      }
-      context.Trade.set(whitelistedTrade);
-      const whitelistPurchaseSnapshot: WhitelistPurchaseSnapshot = {
-        id: hash + "-" + logIndex,
-        monster_id: srcAddress,
-        trader: trader,
-        timestamp: timestamp,
-        ethAmountPurchased: ethAmountInEth,
-      }
-      context.WhitelistPurchaseSnapshot.set(whitelistPurchaseSnapshot);      
+  // Search for the corresponding Transfer event
+  let trade: Trade | undefined = undefined;
+  
+  // Search backwards from the current logIndex to find the Transfer event
+  for (let searchLogIndex = logIndex - 1; searchLogIndex >= 0; searchLogIndex--) {
+    const tradeId = hash + "-" + searchLogIndex + "-" + trader;
+    trade = await context.Trade.get(tradeId);
+    
+    if (trade) {
+      break; // Found it!
     }
+  }
+  
+  if (!trade) {
+    context.log.warn("Could not find corresponding Transfer event for Trade", {
+      trader,
+      hash,
+      logIndex,
+      tradeType: isBuy ? "BUY" : "SELL",
+      block: event.block.number,
+      contractAddress: srcAddress
+    });
   } else {
+    // Update the Transfer entry with Trade information
     trade = {
       ...trade,
       tradeType: isBuy ? "BUY" : "SELL",
       logIndexTrade: logIndex,
       ethAmount: ethAmountInEth,      
-    }
-  
-    context.Trade.set(trade);    
+    };
+    
+    context.Trade.set(trade);
   }
-
 
   let traderEntity: Trader | undefined = await context.Trader.get(trader);
   if (!traderEntity) {
@@ -267,9 +260,32 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
 
   context.TotalVolumeTradedSnapshot.set(totalVolumeTradedSnapshot);    
 
-  // update the current holding for the trader
+    // update the current holding for the trader
   await updateHoldingsTrade(context, monster, trader, isBuy ? amountInEth : amountInEth.negated(), monster.price, hash, logIndex, srcAddress, timestamp);
   
+});
+
+CreatureBoringToken.WhitelistPurchase.handler(async ({ event, context }) => {
+  const { buyer, amount, ethAmount } = event.params;
+  const { hash } = event.transaction;
+  const { logIndex, srcAddress } = event;
+  const { timestamp } = event.block;
+
+  // Convert amounts from wei to ETH
+  const ethAmountInEth = new BigDecimal(ethAmount.toString()).dividedBy(WEI_TO_ETHER);
+  const tokenAmountInEth = new BigDecimal(amount.toString()).dividedBy(WEI_TO_ETHER);
+
+  // Create WhitelistPurchaseSnapshot
+  const whitelistPurchaseSnapshot: WhitelistPurchaseSnapshot = {
+    id: hash + "-" + logIndex,
+    monster_id: srcAddress,
+    trader: buyer,
+    timestamp: timestamp,
+    ethAmountPurchased: ethAmountInEth,
+    tokenAmount: tokenAmountInEth,
+  };
+
+  context.WhitelistPurchaseSnapshot.set(whitelistPurchaseSnapshot);
 });
 
 // PriceUpdate(uint256 newPrice, uint256 tokenSupply, uint256 curveMultiplierValue)
