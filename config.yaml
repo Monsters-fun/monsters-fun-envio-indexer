@@ -60,8 +60,8 @@ networks:
       - name: CreatureBoringToken
 
   # ---------- ABS mainnet ----------
-  # - id: 2741
-  #   start_block: 9349083
-  #   contracts:
-  #     - name: MonsterCapsule
-  #       address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
+  - id: 2741
+    start_block: 9349083
+    contracts:
+      - name: MonsterCapsule
+        address: "0x1Dc3f87AC2059919700e69FBcb93E92B0FeBbb18"
