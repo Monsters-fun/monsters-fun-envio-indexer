@@ -56,7 +56,7 @@ networks:
     rpc: https://api.testnet.abs.xyz
     contracts:
       - name: CreatureBoringFactory
-        address: "0x1Dc3f87AC2059919700e69FBcb93E92B0FeBbb18"
+        address: "0x3e18Fdafa91c3955Cc2DC4657813255258725eb4"
       - name: CreatureBoringToken
 
   # ---------- ABS mainnet ----------
