@@ -22,6 +22,8 @@ type Monster {
     activeOpponent: String # address of the opponent in the current battle
     contractOwner: String! # address of the owner of the monster contract
     paused: Boolean! # true if the monster is paused
+    # Bonding curve calculation parameters for client-side price calculations
+    curveMultiplier: BigDecimal! # Bonding curve multiplier for price calculations
 }
 
 type PriceSnapShot {
@@ -29,6 +31,8 @@ type PriceSnapShot {
     monster: String!
     timestamp: BigInt! @index
     price: BigDecimal!
+    tokenSupply: BigDecimal! # Current token supply
+    curveMultiplier: BigDecimal! # Bonding curve multiplier for price calculations
 }
 
 
