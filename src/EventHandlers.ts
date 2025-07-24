@@ -228,13 +228,13 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
     traderEntity = {
       id: trader,
       numberOfTrades: 1,      
-      points: ethAmountInEth.multipliedBy(new BigDecimal(TRADE_POINTS_MULTIPLIER)), 
+      points: new BigDecimal(Math.floor(ethAmountInEth.multipliedBy(new BigDecimal(TRADE_POINTS_MULTIPLIER)).toNumber())), 
     }
   } else {
     traderEntity = {
       ...traderEntity,
       numberOfTrades: traderEntity.numberOfTrades + 1,
-      points: traderEntity.points.plus(ethAmountInEth.multipliedBy(new BigDecimal(TRADE_POINTS_MULTIPLIER))),
+      points: new BigDecimal(Math.floor(traderEntity.points.plus(ethAmountInEth.multipliedBy(new BigDecimal(TRADE_POINTS_MULTIPLIER))).toNumber())),
     }
   }
 
@@ -380,7 +380,7 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
         const additionalPoints = new BigDecimal(WIN_POINTS_MULTIPLIER).multipliedBy(currentHoldings.balance);
         trader = {
           ...trader,
-          points: trader.points.plus(additionalPoints),
+          points: new BigDecimal(Math.floor(trader.points.plus(additionalPoints).toNumber())),
         }
         
         context.Trader.set(trader);

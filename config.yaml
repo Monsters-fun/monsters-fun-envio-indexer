@@ -52,7 +52,7 @@ unordered_multichain_mode: true
 networks:
   # ---------- ABS testnet ----------
   - id: 11124
-    start_block: 8963740
+    start_block: 11085335  
     rpc: https://api.testnet.abs.xyz
     contracts:
       - name: CreatureBoringFactory
