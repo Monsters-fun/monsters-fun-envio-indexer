@@ -290,7 +290,7 @@ CreatureBoringToken.WhitelistPurchase.handler(async ({ event, context }) => {
 
 // PriceUpdate(uint256 newPrice, uint256 tokenSupply, uint256 curveMultiplierValue)
 CreatureBoringToken.PriceUpdate.handler(async ({event, context}) => {
-  const { newPrice, tokenSupply } = event.params
+  const { newPrice, tokenSupply, curveMultiplierValue } = event.params
   const { hash } = event.transaction
   const { timestamp } = event.block
   const { srcAddress, logIndex } = event
@@ -301,11 +301,13 @@ CreatureBoringToken.PriceUpdate.handler(async ({event, context}) => {
     const priceInEther = new BigDecimal(newPrice.toString()).dividedBy(WEI_TO_ETHER);
     const supplyInEther = new BigDecimal(tokenSupply.toString()).dividedBy(WEI_TO_ETHER);
     const marketCapInEther = priceInEther.multipliedBy(supplyInEther);
+    const curveMultiplierInEther = new BigDecimal(curveMultiplierValue.toString()).dividedBy(WEI_TO_ETHER);
     
     updateMonster(context, monster, {
       price: priceInEther, 
       marketCap: marketCapInEther,
-      supply: supplyInEther
+      supply: supplyInEther,
+      curveMultiplier: curveMultiplierInEther
     }) 
     
     context.PriceSnapShot.set({
@@ -313,6 +315,8 @@ CreatureBoringToken.PriceUpdate.handler(async ({event, context}) => {
       monster: srcAddress,
       timestamp: BigInt(timestamp),
       price: priceInEther,
+      tokenSupply: supplyInEther,
+      curveMultiplier: curveMultiplierInEther,
     })
   } else {
     context.log.warn(`Trying to update price on non existent monster: ${srcAddress}`)  
