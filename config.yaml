@@ -52,11 +52,11 @@ unordered_multichain_mode: true
 networks:
   # ---------- ABS testnet ----------
   - id: 11124
-    start_block: 11085335  
+    start_block: 11881389  
     rpc: https://api.testnet.abs.xyz
     contracts:
       - name: CreatureBoringFactory
-        address: "0x3e18Fdafa91c3955Cc2DC4657813255258725eb4"
+        address: "0x11e0245f11C636c6c7f4111D0DAf3F6EA9F490bC"
       - name: CreatureBoringToken
 
   # ---------- ABS mainnet ----------
