@@ -1,4 +1,4 @@
-export const WIN_POINTS_MULTIPLIER: number = 5550;
+export const WIN_POINTS_MULTIPLIER: number = 0.0005;
 export const TRADE_POINTS_MULTIPLIER: number = 37600;
 export const MONSTER_XP_MULTIPLIER: number = 0.1;  
 
