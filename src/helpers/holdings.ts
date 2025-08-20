@@ -17,6 +17,11 @@ export const createOrUpdateHoldingsTransfer = async (
   srcAddress: string, 
   blockTimestamp: number
 ) => {
+  // Skip tracking holdings for ZERO_ADDRESS (mint/burn operations)
+  if (trader === ZERO_ADDRESS) {
+    return;
+  }
+  
   const holdingId = `${monster.id}-${trader}`;
   let holding: CurrentHoldings | undefined = await context.CurrentHoldings.get(holdingId);
   
@@ -36,10 +41,12 @@ export const createOrUpdateHoldingsTransfer = async (
       totalHoldingsSales: new BigDecimal(0) // Initialized to 0, will be updated by Trade events only
     } 
   } else {
+    const newBalance = holding.balance.plus(balance);
+    
     holding = {
       ...holding,
-      balance: holding.balance.plus(balance),
-      lastTradeMarketCap: holding.balance.plus(balance).multipliedBy(price),
+      balance: newBalance,
+      lastTradeMarketCap: newBalance.multipliedBy(price),
       // DO NOT update totalHoldingsCost/Sales here - only in Trade event handler
     }
   }
@@ -81,6 +88,8 @@ export const updateHoldingsTrade = async (
   const holdingId = `${monster.id}-${trader}`;
   let holding: CurrentHoldings | undefined = await context.CurrentHoldings.get(holdingId);
   
+  // Debug logging can be enabled here if needed
+  
   if (!holding) {
       context.log.error("A transfer event has to happen before a trade event therefore a holding entity should exist")
       return;
@@ -88,13 +97,58 @@ export const updateHoldingsTrade = async (
   
   const isBuy = tokenAmount.isGreaterThan(0);
   
+  let newTotalHoldingsCost = holding.totalHoldingsCost;
+  let newTotalHoldingsSales = holding.totalHoldingsSales;
+  
+  if (isBuy) {
+    // On buy: add to cost basis
+    newTotalHoldingsCost = holding.totalHoldingsCost.plus(ethAmount);
+    // Don't reset sales on buy - keep historical tracking
+  } else {
+    // On sell: handle different scenarios
+    const soldTokens = tokenAmount.abs(); // tokenAmount is negative for sells
+    const remainingTokens = holding.balance; // This is the balance AFTER the sell (updated by Transfer event first)
+    const totalTokensBeforeSell = remainingTokens.plus(soldTokens);
+    
+    // Add to sales tracking
+    newTotalHoldingsSales = holding.totalHoldingsSales.plus(ethAmount);
+    
+    if (totalTokensBeforeSell.isGreaterThan(0)) {
+      // Case 1: Complete sell (balance = 0)
+      if (remainingTokens.isEqualTo(0)) {
+        // Clear all cost basis and reset sales for clean slate
+        newTotalHoldingsCost = new BigDecimal(0);
+        newTotalHoldingsSales = new BigDecimal(0);
+      } 
+      // Case 2: Near-complete sell (dust remaining - very small balance)
+      else if (remainingTokens.isLessThan(new BigDecimal("0.001"))) {
+        // For very small remaining balances, clear cost basis to avoid PnL distortion
+        newTotalHoldingsCost = new BigDecimal(0);
+      }
+      // Case 3: Partial sell (significant balance remaining)
+      else {
+        // Reduce cost basis proportionally
+        const proportionSold = soldTokens.dividedBy(totalTokensBeforeSell);
+        const costToRemove = holding.totalHoldingsCost.multipliedBy(proportionSold);
+        newTotalHoldingsCost = holding.totalHoldingsCost.minus(costToRemove);
+        
+        // Debug logging for proportional cost reduction (can be enabled if needed)
+        
+        // Ensure cost basis never goes negative due to precision errors
+        if (newTotalHoldingsCost.isLessThan(0)) {
+          newTotalHoldingsCost = new BigDecimal(0);
+        }
+      }
+    }
+  }
+  
   holding = {
     ...holding,
     lastTradePrice: price,
     lastTradeMarketCap: holding.balance.multipliedBy(price),
     // Use actual ETH amounts from the trade for accurate PnL tracking
-    totalHoldingsCost: isBuy ? holding.totalHoldingsCost.plus(ethAmount) : holding.totalHoldingsCost,
-    totalHoldingsSales: isBuy ? holding.totalHoldingsSales : holding.totalHoldingsSales.plus(ethAmount),
+    totalHoldingsCost: newTotalHoldingsCost,
+    totalHoldingsSales: newTotalHoldingsSales,
   }
   
   context.CurrentHoldings.set(holding);
