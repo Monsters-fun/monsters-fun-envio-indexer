@@ -142,7 +142,8 @@ type Capsule @entity {
 }
 
 type CapsuleHolder @entity {
-  id: ID! # address of the user
+  id: ID! # Address of the user (lowercased)
+  originalAddress: String! @index # Original address without lowercasing
   capsules: [Capsule!]! @derivedFrom(field: "owner")
   
   # Capsule counts

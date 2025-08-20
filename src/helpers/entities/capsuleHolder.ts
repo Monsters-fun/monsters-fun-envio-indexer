@@ -47,6 +47,7 @@ export async function getOrCreateCapsuleHolder(
   
   return await context.CapsuleHolder.getOrCreate({
     id: normalizedAddress,
+    originalAddress: address, // Store the original address without lowercasing
     totalCapsules: 0,
     stakedCapsules: 0,
     stakingBonusTier: 0,
@@ -68,6 +69,7 @@ export async function updateHolderStats(
     // For excluded addresses, we might not have a preloadedHolder, return a dummy one
     return preloadedHolder || {
       id: holderAddress,
+      originalAddress: holderAddress, // Keep original address for dummy entries
       totalCapsules: 0,
       stakedCapsules: 0,
       stakingBonusTier: 0,
