@@ -261,7 +261,7 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
   context.TotalVolumeTradedSnapshot.set(totalVolumeTradedSnapshot);    
 
     // update the current holding for the trader
-  await updateHoldingsTrade(context, monster, trader, isBuy ? amountInEth : amountInEth.negated(), monster.price, hash, logIndex, srcAddress, timestamp);
+  await updateHoldingsTrade(context, monster, trader, isBuy ? amountInEth : amountInEth.negated(), ethAmountInEth, monster.price, hash, logIndex, srcAddress, timestamp);
   
 });
 
