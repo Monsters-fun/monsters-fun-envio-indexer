@@ -86,8 +86,8 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   const { logIndex, srcAddress } = event
   const { timestamp, number } = event.block
 
-  // Convert token amount from wei to ETH
-  const amountInEth = new BigDecimal(value.toString()).dividedBy(WEI_TO_ETHER);
+  // Convert token amount from wei to ETH for consistency with cost/sales tracking
+  const tokenAmount = new BigDecimal(value.toString()).dividedBy(WEI_TO_ETHER);
 
   let monster: Monster | undefined = await context.Monster.get(srcAddress);
 
@@ -115,7 +115,7 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     monster: srcAddress,
     trader: from,
     tradeType: "TRANSFER_OUT" ,
-    amount: amountInEth,
+    amount: tokenAmount,
     ethAmount: new BigDecimal(0),
     blockTimestamp: BigInt(timestamp),
     blockNumber: BigInt(number),
@@ -131,7 +131,7 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     monster: srcAddress,
     trader: to,
     tradeType: "TRANSFER_IN" ,
-    amount: amountInEth,
+    amount: tokenAmount,
     ethAmount: new BigDecimal(0),
     blockTimestamp: BigInt(timestamp),
     blockNumber: BigInt(number),
@@ -140,10 +140,10 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   context.Trade.set(tradeIn);
 
   // update the current holding for the from address 
-  await createOrUpdateHoldingsTransfer(context, monster, from, new BigDecimal(0).minus(amountInEth), monster.price, hash, logIndex, srcAddress, timestamp);
+  await createOrUpdateHoldingsTransfer(context, monster, from, new BigDecimal(0).minus(tokenAmount), monster.price, hash, logIndex, srcAddress, timestamp);
 
   // update the current holding for the to address
-  await createOrUpdateHoldingsTransfer(context, monster, to, amountInEth, monster.price, hash, logIndex, srcAddress, timestamp);
+  await createOrUpdateHoldingsTransfer(context, monster, to, tokenAmount, monster.price, hash, logIndex, srcAddress, timestamp);
 
 })
 
