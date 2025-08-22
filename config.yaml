@@ -65,3 +65,6 @@ networks:
     contracts:
       - name: MonsterCapsule
         address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
+      - name: CreatureBoringFactory
+        address: "0x2091ebc9d6b7c5d293814a618fb266a768b75c90"
+      - name: CreatureBoringToken
