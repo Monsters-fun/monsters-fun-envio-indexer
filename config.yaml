@@ -66,5 +66,5 @@ networks:
       - name: MonsterCapsule
         address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
       - name: CreatureBoringFactory
-        address: "0x1F1aF85da7B90C906a5AF43F6a7Db1bd1Cafb011"
+        address: "0xbDA783089864E54040bcc57F6A9057121a5ccbBf"
       - name: CreatureBoringToken
