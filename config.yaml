@@ -51,20 +51,20 @@ unordered_multichain_mode: true
 
 networks:
   # ---------- ABS testnet ----------
-  # - id: 11124
-  #   start_block: 11881389
-  #   rpc: https://api.testnet.abs.xyz
-  #   contracts:
-  #     - name: CreatureBoringFactory
-  #       address: "0x11e0245f11C636c6c7f4111D0DAf3F6EA9F490bC"
-  #     - name: CreatureBoringToken
+  - id: 11124
+    start_block: 11881389
+    rpc: https://api.testnet.abs.xyz
+    contracts:
+      - name: CreatureBoringFactory
+        address: "0x3B2FBD0658075349E86e5FA32881479fB3de43B2"
+      - name: CreatureBoringToken
 
   # ---------- ABS mainnet ----------
-  - id: 2741
-    start_block: 9349083
-    contracts:
-      - name: MonsterCapsule
-        address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
-      - name: CreatureBoringFactory
-        address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
-      - name: CreatureBoringToken
+  # - id: 2741
+  #   start_block: 9349083
+  #   contracts:
+  #     - name: MonsterCapsule
+  #       address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
+  #     - name: CreatureBoringFactory
+  #       address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
+  #     - name: CreatureBoringToken
