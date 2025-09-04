@@ -24,6 +24,7 @@ export const createMonster = async (
       contractOwner: "",
       paused: false,
       curveMultiplier: new BigDecimal(0),
+      ethReserve: new BigDecimal(0),
       ...overrides, 
     }  
     context.Monster.set(monster);

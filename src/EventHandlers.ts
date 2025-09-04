@@ -177,6 +177,11 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
   const withdrawalsTotal = isBuy ? monster.withdrawalsTotal : monster.withdrawalsTotal.plus(ethAmountInEth);
   const experiencePointsChange = ethAmountInEth.multipliedBy(new BigDecimal(MONSTER_XP_MULTIPLIER))
   const experiencePoints = isBuy ? monster.experiencePoints.plus(experiencePointsChange) : monster.experiencePoints.minus(experiencePointsChange)
+  
+  // Update ethReserve based on the trade (ethAmount is the base price without fees)
+  const ethReserve = isBuy 
+    ? monster.ethReserve.plus(ethAmountInEth)  // Add ETH on buys
+    : monster.ethReserve.minus(ethAmountInEth); // Remove ETH on sells
 
   monster = {
     ...monster,
@@ -184,7 +189,8 @@ CreatureBoringToken.Trade.handler(async ({ event, context }) => {
     totalVolumeTraded: monster.totalVolumeTraded.plus(ethAmountInEth),
     depositsTotal: depositsTotal,
     withdrawalsTotal: withdrawalsTotal,
-    experiencePoints: experiencePoints, 
+    experiencePoints: experiencePoints,
+    ethReserve: ethReserve, 
   }
 
   context.Monster.set(monster);
@@ -394,6 +400,12 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
       const newTotalWinsCount = monster.totalWinsCount + (isWin ? 1 : 0);
       const newTotalLossesCount = monster.totalLossesCount + (!isWin ? 1 : 0);
       const newWinLoseRatio = newTotalWinsCount / (newTotalWinsCount + newTotalLossesCount);
+      
+      // Update ethReserve based on battle outcome
+      // Winner gains transferredValue, loser loses transferredValue
+      const ethReserveChange = isWin 
+        ? monster.ethReserve.plus(transferredValueInEth)
+        : monster.ethReserve.minus(transferredValueInEth);
 
       monster = {
         ...monster,
@@ -402,6 +414,7 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
         winLoseRatio: newWinLoseRatio,
         isInBattle: false,
         activeOpponent: undefined,
+        ethReserve: ethReserveChange.isNegative() ? new BigDecimal(0) : ethReserveChange,
       }    
       context.Monster.set(monster);
     }

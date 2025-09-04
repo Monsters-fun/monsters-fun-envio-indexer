@@ -24,6 +24,7 @@ type Monster {
     paused: Boolean! # true if the monster is paused
     # Bonding curve calculation parameters for client-side price calculations
     curveMultiplier: BigDecimal! # Bonding curve multiplier for price calculations
+    ethReserve: BigDecimal! # ETH reserves held by the contract (tracked from Trade and Battle events)
 }
 
 type PriceSnapShot {
