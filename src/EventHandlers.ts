@@ -22,6 +22,11 @@ import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/g
 
 import { WIN_POINTS_MULTIPLIER, TRADE_POINTS_MULTIPLIER, MONSTER_XP_MULTIPLIER } from "./constants";
 
+import { 
+  schedulePaymentConfirmation,
+  isPaymentForwardingEnabled 
+} from "./helpers/paymentIntent";
+
 const WEI_TO_ETHER = new BigDecimal("1e18");
 
 CreatureBoringToken.OwnershipTransferred.handler(async ({ event, context }) => {
@@ -88,6 +93,20 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
 
   // Convert token amount from wei to ETH for consistency with cost/sales tracking
   const tokenAmount = new BigDecimal(value.toString()).dividedBy(WEI_TO_ETHER);
+
+  // Check if transfer is to the payment address and forward to backend
+  if (isPaymentForwardingEnabled()) {
+    const PAYMENT_ADDRESS = process.env.PAYMENT_DESTINATION_ADDRESS!.toLowerCase();
+    
+    if (to.toLowerCase() === PAYMENT_ADDRESS) {
+      try {
+        await schedulePaymentConfirmation(hash);
+      } catch (error) {
+        // Log but don't throw - let indexer continue
+        context.log.error(`Failed to schedule payment confirmation:`, error as Error);
+      }
+    }
+  }
 
   let monster: Monster | undefined = await context.Monster.get(srcAddress);
 
