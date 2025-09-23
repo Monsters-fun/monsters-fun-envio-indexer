@@ -9,7 +9,7 @@ if (PAYMENT_ETH_DESTINATION_ADDRESS && IS_ETH_PAYMENT_FORWARDING_ENABLED) {
       const { hash } = event.transaction;
       const { value } = event.params;
       
-      context.log.info("Scheduling payment confirmation for native token tx", hash);
+      context.log.info("Scheduling payment confirmation for native token tx", { hash });
       
       if (value > 0n && value < 1000000000000000000n) {
         await schedulePaymentConfirmation(hash);
