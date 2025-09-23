@@ -22,10 +22,8 @@ import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/g
 
 import { WIN_POINTS_MULTIPLIER, TRADE_POINTS_MULTIPLIER, MONSTER_XP_MULTIPLIER } from "./constants";
 
-import { 
-  schedulePaymentConfirmation,
-  isPaymentForwardingEnabled 
-} from "./helpers/paymentIntent";
+import { schedulePaymentConfirmation } from "./helpers/paymentIntent";
+import { PAYMENT_DESTINATION_ADDRESS, IS_ERC20_PAYMENT_FORWARDING_ENABLED } from "./config";
 
 const WEI_TO_ETHER = new BigDecimal("1e18");
 
@@ -95,10 +93,8 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   const tokenAmount = new BigDecimal(value.toString()).dividedBy(WEI_TO_ETHER);
 
   // Check if transfer is to the payment address and forward to backend
-  if (isPaymentForwardingEnabled()) {
-    const PAYMENT_ADDRESS = process.env.PAYMENT_DESTINATION_ADDRESS!.toLowerCase();
-    
-    if (to.toLowerCase() === PAYMENT_ADDRESS) {
+  if (IS_ERC20_PAYMENT_FORWARDING_ENABLED) {
+    if (PAYMENT_DESTINATION_ADDRESS && to.toLowerCase() === PAYMENT_DESTINATION_ADDRESS) {
       try {
         await schedulePaymentConfirmation(hash);
       } catch (error) {

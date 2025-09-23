@@ -1,4 +1,10 @@
 import { CloudTasksClient } from '@google-cloud/tasks';
+import {
+  BACKEND_URL,
+  GCP_LOCATION,
+  GCP_PROJECT_ID,
+  GCP_QUEUE_NAME,
+} from "../config";
 
 let cloudTasksClient: CloudTasksClient | null = null;
 
@@ -16,9 +22,11 @@ function getCloudTasksClient(): CloudTasksClient {
  * Validates required environment variables for payment processing
  */
 function validateEnvironment(): void {
-  const required = ['GCP_PROJECT_ID', 'GCP_LOCATION', 'GCP_QUEUE_NAME', 'BACKEND_URL'];
-  const missing = required.filter(key => !process.env[key]);
-  
+  const missing: string[] = [];
+  if (!GCP_PROJECT_ID) missing.push('GCP_PROJECT_ID');
+  if (!GCP_LOCATION) missing.push('GCP_LOCATION');
+  if (!GCP_QUEUE_NAME) missing.push('GCP_QUEUE_NAME');
+  if (!BACKEND_URL) missing.push('BACKEND_URL');
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
@@ -35,16 +43,12 @@ export async function schedulePaymentConfirmation(
   validateEnvironment();
   
   const client = getCloudTasksClient();
-  const parent = client.queuePath(
-    process.env.GCP_PROJECT_ID!,
-    process.env.GCP_LOCATION!,
-    process.env.GCP_QUEUE_NAME!
-  );
+  const parent = client.queuePath(GCP_PROJECT_ID!, GCP_LOCATION!, GCP_QUEUE_NAME!);
 
   const task = {
     httpRequest: {
       httpMethod: 'POST' as const,
-      url: `${process.env.BACKEND_URL}/payments/intents/confirm`,
+      url: `${BACKEND_URL}/payments/intents/confirm`,
       headers: {
         'Content-Type': 'application/json',
         'X-Cloud-Task': 'payment-confirmation',
@@ -65,11 +69,4 @@ export async function schedulePaymentConfirmation(
     // Re-throw with more context for the caller to handle
     throw new Error(`Failed to create Cloud Task for tx ${transactionHash}: ${error.message}`);
   }
-}
-
-/**
- * Check if payment forwarding is enabled
- */
-export function isPaymentForwardingEnabled(): boolean {
-  return Boolean(process.env.PAYMENT_DESTINATION_ADDRESS && process.env.BACKEND_URL);
 }
