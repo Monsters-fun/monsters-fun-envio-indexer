@@ -15,6 +15,43 @@ let parsedCredentials: CredentialBody | null = null;
 let credentialsInitialized = false;
 let credentialParseError: Error | null = null;
 
+function parseCredentialsObject(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("value must be a JSON object");
+  }
+  return raw as Record<string, unknown>;
+}
+
+function tryParseJsonObject(value: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(value);
+    return parseCredentialsObject(parsed);
+  } catch (error) {
+    return null;
+  }
+}
+
+function decodeMaybeBase64(value: string): Record<string, unknown> {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new Error("value is empty");
+  }
+
+  const direct = tryParseJsonObject(trimmed);
+  if (direct) return direct;
+
+  try {
+    const decoded = Buffer.from(trimmed, "base64").toString("utf8");
+    const decodedTrimmed = decoded.trim();
+    const parsed = decodedTrimmed ? tryParseJsonObject(decodedTrimmed) : null;
+    if (parsed) return parsed;
+  } catch (error) {
+    // fall through to generic error below
+  }
+
+  throw new Error("value must be valid JSON or base64-encoded JSON");
+}
+
 /**
  * Parse service account credentials from env (if provided) and cache the result.
  */
@@ -28,12 +65,7 @@ function getServiceAccountCredentials(): CredentialBody | undefined {
   }
 
   try {
-    const rawValue = JSON.parse(GOOGLE_APPLICATION_CREDENTIALS_JSON) as CredentialBody | null;
-    if (!rawValue || typeof rawValue !== "object" || Array.isArray(rawValue)) {
-      throw new Error("value must be a JSON object");
-    }
-
-    const candidate = rawValue as Record<string, unknown>;
+    const candidate = decodeMaybeBase64(GOOGLE_APPLICATION_CREDENTIALS_JSON);
     const clientEmail = typeof candidate.client_email === "string" ? candidate.client_email.trim() : "";
     const privateKeyRaw = typeof candidate.private_key === "string" ? candidate.private_key : "";
 
