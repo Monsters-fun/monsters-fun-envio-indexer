@@ -1,19 +1,91 @@
 import { CloudTasksClient } from '@google-cloud/tasks';
+import type { ClientOptions } from 'google-gax';
+import type { CredentialBody } from 'google-auth-library';
 import {
   BACKEND_URL,
   GCP_LOCATION,
   GCP_PROJECT_ID,
   GCP_QUEUE_NAME,
+  GOOGLE_APPLICATION_CREDENTIALS,
+  GOOGLE_APPLICATION_CREDENTIALS_JSON,
 } from "../config";
 
 let cloudTasksClient: CloudTasksClient | null = null;
+let parsedCredentials: CredentialBody | null = null;
+let credentialsInitialized = false;
+let credentialParseError: Error | null = null;
+
+/**
+ * Parse service account credentials from env (if provided) and cache the result.
+ */
+function getServiceAccountCredentials(): CredentialBody | undefined {
+  if (credentialParseError) throw credentialParseError;
+  if (credentialsInitialized) return parsedCredentials ?? undefined;
+
+  if (!GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+    credentialsInitialized = true;
+    return undefined;
+  }
+
+  try {
+    const rawValue = JSON.parse(GOOGLE_APPLICATION_CREDENTIALS_JSON) as CredentialBody | null;
+    if (!rawValue || typeof rawValue !== "object" || Array.isArray(rawValue)) {
+      throw new Error("value must be a JSON object");
+    }
+
+    const candidate = rawValue as Record<string, unknown>;
+    const clientEmail = typeof candidate.client_email === "string" ? candidate.client_email.trim() : "";
+    const privateKeyRaw = typeof candidate.private_key === "string" ? candidate.private_key : "";
+
+    if (!clientEmail) {
+      throw new Error("missing client_email");
+    }
+
+    if (!privateKeyRaw.trim()) {
+      throw new Error("missing private_key");
+    }
+
+    // Normalize escaped newlines in private key if necessary
+    const normalizedPrivateKey = privateKeyRaw.replace(/\\n/g, "\n");
+
+    parsedCredentials = {
+      ...(candidate as CredentialBody),
+      client_email: clientEmail,
+      private_key: normalizedPrivateKey,
+    };
+
+    credentialsInitialized = true;
+    return parsedCredentials;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    credentialParseError = new Error(`Invalid GOOGLE_APPLICATION_CREDENTIALS_JSON: ${message}`);
+    throw credentialParseError;
+  }
+}
 
 /**
  * Get or create the Cloud Tasks client (lazy initialization)
  */
 function getCloudTasksClient(): CloudTasksClient {
   if (!cloudTasksClient) {
-    cloudTasksClient = new CloudTasksClient();
+    const clientOptions: ClientOptions = {};
+    const credentials = getServiceAccountCredentials();
+
+    if (GCP_PROJECT_ID) {
+      clientOptions.projectId = GCP_PROJECT_ID;
+    }
+
+    if (credentials) {
+      clientOptions.credentials = credentials;
+      const credentialsProjectId = (credentials as { project_id?: string }).project_id;
+      if (!clientOptions.projectId && typeof credentialsProjectId === "string" && credentialsProjectId.length > 0) {
+        clientOptions.projectId = credentialsProjectId;
+      }
+    } else if (GOOGLE_APPLICATION_CREDENTIALS) {
+      clientOptions.keyFilename = GOOGLE_APPLICATION_CREDENTIALS;
+    }
+
+    cloudTasksClient = new CloudTasksClient(clientOptions);
   }
   return cloudTasksClient;
 }
