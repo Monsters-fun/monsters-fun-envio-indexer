@@ -8,6 +8,7 @@ import {
   GCP_QUEUE_NAME,
   GOOGLE_APPLICATION_CREDENTIALS,
   GOOGLE_APPLICATION_CREDENTIALS_JSON,
+  PAYMENTS_CLOUD_TASKS_SECRET,
 } from "../config";
 
 let cloudTasksClient: CloudTasksClient | null = null;
@@ -131,6 +132,7 @@ function validateEnvironment(): void {
   if (!GCP_LOCATION) missing.push('GCP_LOCATION');
   if (!GCP_QUEUE_NAME) missing.push('GCP_QUEUE_NAME');
   if (!BACKEND_URL) missing.push('BACKEND_URL');
+  if (!PAYMENTS_CLOUD_TASKS_SECRET) missing.push('PAYMENTS_CLOUD_TASKS_SECRET');
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
@@ -155,6 +157,7 @@ export async function schedulePaymentConfirmation(
       url: `${BACKEND_URL}/payments/intents/confirm`,
       headers: {
         'Content-Type': 'application/json',
+        'x-monsters-cloudtasks-secret': PAYMENTS_CLOUD_TASKS_SECRET,
         'X-Cloud-Task': 'payment-confirmation',
         'X-Source': 'envio-indexer',
       },
