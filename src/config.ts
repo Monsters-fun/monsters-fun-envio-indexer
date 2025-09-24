@@ -1,14 +1,24 @@
 // Centralized environment configuration
 // Read process.env here only; everywhere else import these values
 
+const readEnv = (key: string): string | undefined => {
+  const direct = process.env[key];
+  if (typeof direct === "string" && direct.length > 0) return direct;
+
+  const prefixed = process.env[`ENVIO_${key}`];
+  if (typeof prefixed === "string" && prefixed.length > 0) return prefixed;
+
+  return undefined;
+};
+
 const env = (key: string, defaultValue = ""): string => {
-  const v = process.env[key];
-  return typeof v === "string" && v.length > 0 ? v : defaultValue;
+  const value = readEnv(key);
+  return value !== undefined ? value : defaultValue;
 };
 
 const boolEnv = (key: string, defaultValue = true): boolean => {
-  const raw = process.env[key];
-  if (raw === undefined || raw === null || raw === "") return defaultValue;
+  const raw = readEnv(key);
+  if (raw === undefined) return defaultValue;
   const val = String(raw).trim().toLowerCase();
   return val === "1" || val === "true" || val === "yes" || val === "on";
 };
