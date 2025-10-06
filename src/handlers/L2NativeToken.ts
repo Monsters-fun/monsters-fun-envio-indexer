@@ -9,8 +9,6 @@ if (PAYMENT_ETH_DESTINATION_ADDRESS && IS_ETH_PAYMENT_FORWARDING_ENABLED) {
       const { hash } = event.transaction;
       const { value } = event.params;
       
-      context.log.info("Scheduling payment confirmation for native token tx", { hash });
-      
       if (value > 0n && value < 1000000000000000000n) {
         const rawBlockNumber = event.block.number;
         const blockNumber = typeof rawBlockNumber === "bigint" ? rawBlockNumber : BigInt(rawBlockNumber);
@@ -22,6 +20,7 @@ if (PAYMENT_ETH_DESTINATION_ADDRESS && IS_ETH_PAYMENT_FORWARDING_ENABLED) {
             minBlock: PAYMENT_CONFIRMATION_MIN_BLOCK.toString(),
           });
         } else {
+          context.log.info("Scheduling payment confirmation for native token tx", { hash });
           await schedulePaymentConfirmation(hash);
         }
       }
