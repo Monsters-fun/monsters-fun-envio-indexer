@@ -80,5 +80,5 @@ networks:
       - name: L2NativeToken
         address: "0x000000000000000000000000000000000000800A"
       - name: CreatureBoringFactory
-          address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
+        address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
       - name: CreatureBoringToken
