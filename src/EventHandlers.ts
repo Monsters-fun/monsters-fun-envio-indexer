@@ -23,7 +23,7 @@ import { createGlobalStats, updateGlobalStats, globalStatsId } from "./helpers/g
 import { WIN_POINTS_MULTIPLIER, TRADE_POINTS_MULTIPLIER, MONSTER_XP_MULTIPLIER } from "./constants";
 
 import { schedulePaymentConfirmation } from "./helpers/paymentIntent";
-import { PAYMENT_DESTINATION_ADDRESS, IS_ERC20_PAYMENT_FORWARDING_ENABLED } from "./config";
+import { PAYMENT_DESTINATION_ADDRESS, IS_ERC20_PAYMENT_FORWARDING_ENABLED, PAYMENT_CONFIRMATION_MIN_BLOCK } from "./config";
 
 const WEI_TO_ETHER = new BigDecimal("1e18");
 
@@ -88,6 +88,7 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   const { hash } = event.transaction
   const { logIndex, srcAddress } = event
   const { timestamp, number } = event.block
+  const blockNumber = BigInt(number);
 
   // Convert token amount from wei to ETH for consistency with cost/sales tracking
   const tokenAmount = new BigDecimal(value.toString()).dividedBy(WEI_TO_ETHER);
@@ -95,11 +96,19 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
   // Check if transfer is to the payment address and forward to backend
   if (IS_ERC20_PAYMENT_FORWARDING_ENABLED) {
     if (PAYMENT_DESTINATION_ADDRESS && to.toLowerCase() === PAYMENT_DESTINATION_ADDRESS) {
-      try {
-        await schedulePaymentConfirmation(hash);
-      } catch (error) {
-        // Log but don't throw - let indexer continue
-        context.log.error(`Failed to schedule payment confirmation:`, error as Error);
+      if (blockNumber < PAYMENT_CONFIRMATION_MIN_BLOCK) {
+        context.log.info("Skipping payment confirmation scheduling below min block", {
+          hash,
+          blockNumber: blockNumber.toString(),
+          minBlock: PAYMENT_CONFIRMATION_MIN_BLOCK.toString(),
+        });
+      } else {
+        try {
+          await schedulePaymentConfirmation(hash);
+        } catch (error) {
+          // Log but don't throw - let indexer continue
+          context.log.error(`Failed to schedule payment confirmation:`, error as Error);
+        }
       }
     }
   }
@@ -133,7 +142,7 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     amount: tokenAmount,
     ethAmount: new BigDecimal(0),
     blockTimestamp: BigInt(timestamp),
-    blockNumber: BigInt(number),
+    blockNumber,
   }
 
   context.Trade.set(tradeOut);  
@@ -149,7 +158,7 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
     amount: tokenAmount,
     ethAmount: new BigDecimal(0),
     blockTimestamp: BigInt(timestamp),
-    blockNumber: BigInt(number),
+    blockNumber,
   }
 
   context.Trade.set(tradeIn);

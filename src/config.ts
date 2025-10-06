@@ -23,6 +23,24 @@ const boolEnv = (key: string, defaultValue = true): boolean => {
   return val === "1" || val === "true" || val === "yes" || val === "on";
 };
 
+const bigIntEnv = (key: string, defaultValue: bigint = 0n): bigint => {
+  const raw = readEnv(key);
+  if (raw === undefined) return defaultValue;
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) return defaultValue;
+
+  try {
+    const value = BigInt(trimmed);
+    if (value < 0n) {
+      throw new Error(`${key} must be a non-negative integer`);
+    }
+    return value;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid value for ${key}: ${message}`);
+  }
+};
+
 // Backend
 export const BACKEND_URL = env("BACKEND_URL", "https://monster-be-mainnet-467490125245.us-central1.run.app");
 
@@ -33,6 +51,7 @@ export const GCP_QUEUE_NAME = env("GCP_QUEUE_NAME", "payments");
 export const GOOGLE_APPLICATION_CREDENTIALS = env("GOOGLE_APPLICATION_CREDENTIALS");
 export const GOOGLE_APPLICATION_CREDENTIALS_JSON = env("GOOGLE_APPLICATION_CREDENTIALS_JSON");
 export const PAYMENTS_CLOUD_TASKS_SECRET = env("PAYMENTS_CLOUD_TASKS_SECRET");
+export const PAYMENT_CONFIRMATION_MIN_BLOCK = bigIntEnv("PAYMENT_CONFIRMATION_MIN_BLOCK", 0n);
 
 // Payments addresses
 export const PAYMENT_DESTINATION_ADDRESS = env("PAYMENT_DESTINATION_ADDRESS", "0xB783448d31Ce8768B1F296fa3541A297fC1353c7").toLowerCase();
