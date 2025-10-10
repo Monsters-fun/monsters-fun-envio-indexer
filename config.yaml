@@ -92,7 +92,7 @@ networks:
       - name: L2NativeToken
         address: "0x000000000000000000000000000000000000800A"
       - name: MonstersPvpArenaV1
-        address: "0x2c21D6C0C81f7dB8fCa08F701aAAe17A1054D8D2"
+        address: "0x80014f3d70637202415ce69bA3EC1ff4D9F1d49F"
 
   # ---------- ABS mainnet ----------
   - id: 2741
