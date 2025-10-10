@@ -2,3 +2,4 @@
 
 import "./MonsterCapsule";
 import "./L2NativeToken";
+import "./PvpArena";

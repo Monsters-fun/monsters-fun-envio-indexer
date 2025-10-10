@@ -54,6 +54,27 @@ contracts:
     events:
       - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 
+  - name: MonstersPvpArenaV1
+    handler: src/EventHandlers.ts
+    abi_file_path: ./contracts/arena/SimplePvPArena.json
+    events:
+      - event: event ChallengeCreated(uint256 indexed matchId, address indexed player1, address indexed player2, address stakeToken, uint256 stakeAmount, bytes32 paramsHash, uint48 acceptDeadline)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event MatchStarted(uint256 indexed matchId, address indexed player1, address indexed player2)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event MatchResolved(uint256 indexed matchId, address indexed winner, address indexed loser, uint256 winnerPayout, uint256 feePaid, bytes32 resultHash)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event MatchCancelled(uint256 indexed matchId, address indexed caller, string reason)
+        field_selection:
+          transaction_fields:
+            - hash
+
 #######################################################
 # MULTICHAIN SETTINGS
 #######################################################
@@ -61,15 +82,17 @@ unordered_multichain_mode: true
 
 networks:
   # ---------- ABS testnet ----------
-  # - id: 11124
-  #   start_block: 11881389
-  #   rpc: https://api.testnet.abs.xyz
-  #   contracts:
-  #     - name: CreatureBoringFactory
-  #       address: "0x3B2FBD0658075349E86e5FA32881479fB3de43B2"
-  #     - name: CreatureBoringToken
-  #     - name: L2NativeToken
-  #       address: "0x000000000000000000000000000000000000800A"
+  - id: 11124
+    start_block: 11881389
+    rpc: https://api.testnet.abs.xyz
+    contracts:
+      - name: CreatureBoringFactory
+        address: "0x3B2FBD0658075349E86e5FA32881479fB3de43B2"
+      - name: CreatureBoringToken
+      - name: L2NativeToken
+        address: "0x000000000000000000000000000000000000800A"
+      - name: MonstersPvpArenaV1
+        address: "0x2c21D6C0C81f7dB8fCa08F701aAAe17A1054D8D2"
 
   # ---------- ABS mainnet ----------
   - id: 2741
@@ -77,8 +100,8 @@ networks:
     contracts:
       - name: MonsterCapsule
         address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
-      - name: L2NativeToken
-        address: "0x000000000000000000000000000000000000800A"
-      - name: CreatureBoringFactory
-        address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
-      - name: CreatureBoringToken
+      # - name: L2NativeToken
+      #   address: "0x000000000000000000000000000000000000800A"
+      # - name: CreatureBoringFactory
+      #   address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
+      # - name: CreatureBoringToken
