@@ -56,7 +56,6 @@ contracts:
 
   - name: MonstersPvpArenaV1
     handler: src/EventHandlers.ts
-    abi_file_path: ./contracts/arena/SimplePvPArena.json
     events:
       - event: event ChallengeCreated(uint256 indexed matchId, address indexed player1, address indexed player2, address stakeToken, uint256 stakeAmount, bytes32 paramsHash, bytes32 clientMatchId, uint48 acceptDeadline)
         field_selection:
