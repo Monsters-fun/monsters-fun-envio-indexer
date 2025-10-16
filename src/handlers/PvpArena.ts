@@ -26,6 +26,12 @@ function matchesArenaContract(address: string): boolean {
 
 async function queueArenaEvent(eventType: PvpArenaEventType, event: ArenaEvent, logger: ArenaLogger): Promise<void> {
   if (!matchesArenaContract(event.srcAddress)) {
+    logger.info('Ignoring non PVP arena contract event', {
+      eventType,
+      contractAddress: event.srcAddress,
+      logIndex: event.logIndex,
+      txHash: event.transaction?.hash,
+    });
     return;
   }
 
@@ -56,6 +62,7 @@ async function queueArenaEvent(eventType: PvpArenaEventType, event: ArenaEvent, 
     txHash,
     logIndex: event.logIndex,
     blockNumber: blockNumber.toString(),
+    contractAddress: event.srcAddress,
   });
 
   try {
