@@ -82,6 +82,10 @@ MonstersPvpArenaV1.MatchResolved.handler(async ({ event, context }) => {
   await queueArenaEvent('MatchResolved', event, context.log);
 });
 
+MonstersPvpArenaV1.MatchDrawn.handler(async ({ event, context }) => {
+  await queueArenaEvent('MatchDrawn', event, context.log);
+});
+
 MonstersPvpArenaV1.MatchCancelled.handler(async ({ event, context }) => {
   await queueArenaEvent('MatchCancelled', event, context.log);
 });

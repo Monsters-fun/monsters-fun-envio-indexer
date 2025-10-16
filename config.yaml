@@ -69,6 +69,10 @@ contracts:
         field_selection:
           transaction_fields:
             - hash
+      - event: event MatchDrawn(uint256 indexed matchId, address indexed player1, address indexed player2, uint256 player1Payout, uint256 player2Payout, uint256 feePaid, bytes32 resultHash)
+        field_selection:
+          transaction_fields:
+            - hash
       - event: event MatchCancelled(uint256 indexed matchId, address indexed caller, string reason)
         field_selection:
           transaction_fields:
@@ -91,7 +95,7 @@ networks:
       - name: L2NativeToken
         address: "0x000000000000000000000000000000000000800A"
       - name: MonstersPvpArenaV1
-        address: "0x80014f3d70637202415ce69bA3EC1ff4D9F1d49F"
+        address: "0xa43668c529fDeCf46aFa52734a8eF609c4b7AfcE"
 
   # ---------- ABS mainnet ----------
   - id: 2741
