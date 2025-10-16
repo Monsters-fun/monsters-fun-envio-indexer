@@ -30,6 +30,7 @@ async function queueArenaEvent(eventType: PvpArenaEventType, event: ArenaEvent, 
       eventType,
       contractAddress: event.srcAddress,
       logIndex: event.logIndex,
+      targetAddress: TARGET_ADDRESS,
       txHash: event.transaction?.hash,
     });
     return;
