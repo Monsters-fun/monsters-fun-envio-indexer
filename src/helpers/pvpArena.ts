@@ -19,7 +19,7 @@ const EVENT_METADATA = {
     taskName: 'pvp-arena-match-resolved',
   },
   MatchDrawn: {
-    path: 'pvp-arena/indexer/match-drawn',
+    path: '/pvp-arena/indexer/match-drawn',
     taskName: 'pvp-arena-match-drawn',
   },
   MatchCancelled: {
