@@ -58,7 +58,7 @@ export const PVP_ARENA_CLOUD_TASKS_SECRET = env("PVP_ARENA_CLOUD_TASKS_SECRET", 
 export const PVP_ARENA_MIN_BLOCK = bigIntEnv("PVP_ARENA_MIN_BLOCK", 0n);
 
 // PVP arena configuration
-export const PVP_ARENA_ADDRESS = env("PVP_ARENA_ADDRESS", "0xa43668c529fDeCf46aFa52734a8eF609c4b7AfcE").toLowerCase();
+export const PVP_ARENA_ADDRESS = env("PVP_ARENA_ADDRESS", "0x95eF8b998c504410cbc101A2Fc93A134a30bA619").toLowerCase();
 
 // Payments addresses
 export const PAYMENT_DESTINATION_ADDRESS = env("PAYMENT_DESTINATION_ADDRESS", "0xB783448d31Ce8768B1F296fa3541A297fC1353c7").toLowerCase();
