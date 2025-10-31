@@ -1,6 +1,6 @@
 import { MonstersPvpArenaV1 } from 'generated';
-import { scheduleArenaTask, type PvpArenaEventType } from '../helpers/pvpArena';
-import { PVP_ARENA_ADDRESS, PVP_ARENA_MIN_BLOCK } from '../config';
+import { getPvpArenaConfig } from './config';
+import { schedulePvpArenaTask, type PvpArenaEventType } from './tasks';
 
 type ArenaEvent = {
   srcAddress: string;
@@ -15,33 +15,33 @@ type ArenaLogger = {
   info(message: string, meta?: unknown): void;
 };
 
-const TARGET_ADDRESS = PVP_ARENA_ADDRESS;
+const config = getPvpArenaConfig();
 
-function matchesArenaContract(address: string): boolean {
-  if (!TARGET_ADDRESS) {
-    return true;
-  }
-  return address.toLowerCase() === TARGET_ADDRESS;
-}
+const matchesArenaContract = (address: string): boolean =>
+  !config.address || address.toLowerCase() === config.address;
 
-async function queueArenaEvent(eventType: PvpArenaEventType, event: ArenaEvent, logger: ArenaLogger): Promise<void> {
+const queueArenaEvent = async (
+  eventType: PvpArenaEventType,
+  event: ArenaEvent,
+  logger: ArenaLogger,
+): Promise<void> => {
   if (!matchesArenaContract(event.srcAddress)) {
     logger.info('Ignoring non PVP arena contract event', {
       eventType,
       contractAddress: event.srcAddress,
       logIndex: event.logIndex,
-      targetAddress: TARGET_ADDRESS,
+      targetAddress: config.address,
       txHash: event.transaction?.hash,
     });
     return;
   }
 
   const blockNumber = BigInt(event.block.number);
-  if (PVP_ARENA_MIN_BLOCK > 0n && blockNumber < PVP_ARENA_MIN_BLOCK) {
+  if (config.minBlock > 0n && blockNumber < config.minBlock) {
     logger.info('Skipping PVP arena event below min block threshold', {
       eventType,
       blockNumber: blockNumber.toString(),
-      minBlock: PVP_ARENA_MIN_BLOCK.toString(),
+      minBlock: config.minBlock.toString(),
       txHash: event.transaction?.hash,
       logIndex: event.logIndex,
     });
@@ -67,7 +67,7 @@ async function queueArenaEvent(eventType: PvpArenaEventType, event: ArenaEvent, 
   });
 
   try {
-    await scheduleArenaTask(eventType, { txHash, logIndex: event.logIndex });
+    await schedulePvpArenaTask(eventType, { txHash, logIndex: event.logIndex });
   } catch (error) {
     logger.error('Failed to enqueue PVP arena Cloud Task', {
       eventType,
@@ -76,24 +76,26 @@ async function queueArenaEvent(eventType: PvpArenaEventType, event: ArenaEvent, 
       error: error instanceof Error ? error.message : String(error),
     });
   }
-}
+};
 
-MonstersPvpArenaV1.ChallengeCreated.handler(async ({ event, context }) => {
-  await queueArenaEvent('ChallengeCreated', event, context.log);
-});
+export const registerPvpArenaHandlers = (): void => {
+  MonstersPvpArenaV1.ChallengeCreated.handler(async ({ event, context }) => {
+    await queueArenaEvent('ChallengeCreated', event, context.log);
+  });
 
-MonstersPvpArenaV1.MatchStarted.handler(async ({ event, context }) => {
-  await queueArenaEvent('MatchStarted', event, context.log);
-});
+  MonstersPvpArenaV1.MatchStarted.handler(async ({ event, context }) => {
+    await queueArenaEvent('MatchStarted', event, context.log);
+  });
 
-MonstersPvpArenaV1.MatchResolved.handler(async ({ event, context }) => {
-  await queueArenaEvent('MatchResolved', event, context.log);
-});
+  MonstersPvpArenaV1.MatchResolved.handler(async ({ event, context }) => {
+    await queueArenaEvent('MatchResolved', event, context.log);
+  });
 
-MonstersPvpArenaV1.MatchDrawn.handler(async ({ event, context }) => {
-  await queueArenaEvent('MatchDrawn', event, context.log);
-});
+  MonstersPvpArenaV1.MatchDrawn.handler(async ({ event, context }) => {
+    await queueArenaEvent('MatchDrawn', event, context.log);
+  });
 
-MonstersPvpArenaV1.MatchCancelled.handler(async ({ event, context }) => {
-  await queueArenaEvent('MatchCancelled', event, context.log);
-});
+  MonstersPvpArenaV1.MatchCancelled.handler(async ({ event, context }) => {
+    await queueArenaEvent('MatchCancelled', event, context.log);
+  });
+};

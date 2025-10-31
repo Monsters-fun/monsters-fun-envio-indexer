@@ -1,4 +1,4 @@
-import { processTransfer } from "../helpers/monsterCapsule/transfer";
+import { processTransfer } from "./transfer";
 import { getOrCreateCapsuleHolder } from "../helpers/entities";
 import { MonsterCapsule } from "generated";
 import { ZERO_ADDRESS } from "../constants";

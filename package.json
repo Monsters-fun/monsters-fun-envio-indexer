@@ -9,7 +9,7 @@
     "codegen": "envio codegen",
     "dev": "envio dev",
     "test": "pnpm mocha",
-    "start": "ts-node generated/src/Index.bs.js"
+    "start": "envio start"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.0",
-    "envio": "2.27.6"
+    "envio": "2.31.1"
   },
   "optionalDependencies": {
     "generated": "./generated"

@@ -1,22 +1,22 @@
 import type {
   CapsuleHolder,
-  HandlerContext,
   Capsule,
+  handlerContext as HandlerContext,
 } from "generated";
 import {
   CAPSULE_STAKING_CONTRACT_ADDRESS,
   ZERO_ADDRESS,
-} from "../../constants";
+} from "../constants";
 import {
   updateHolderStats,
-} from "../entities/capsuleHolder";
+} from "../helpers/entities/capsuleHolder";
 import {
   createMonsterCapsule,
   updateMonsterCapsuleOwner,
   updateMonsterCapsuleStaking,
   updateMonsterCapsuleOwnerAndUnstake,
   deleteMonsterCapsule,
-} from "../entities/monsterCapsule";
+} from "../helpers/entities/monsterCapsule";
 
 // --- Logic Handlers ---
 

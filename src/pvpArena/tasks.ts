@@ -1,9 +1,5 @@
-import { createCloudTasksContext } from './cloudTasksClient';
-import {
-  BACKEND_URL,
-  PVP_ARENA_CLOUD_TASKS_SECRET,
-  PVP_ARENA_QUEUE_NAME,
-} from '../config';
+import { createCloudTasksContext } from '../helpers/cloudTasksClient';
+import { getPvpArenaConfig } from './config';
 
 const EVENT_METADATA = {
   ChallengeCreated: {
@@ -30,31 +26,19 @@ const EVENT_METADATA = {
 
 export type PvpArenaEventType = keyof typeof EVENT_METADATA;
 
-export interface ArenaTaskPayload {
+export interface PvpArenaTaskPayload {
   txHash: string;
   logIndex?: number;
 }
 
-let environmentValidated = false;
-
-function validateEnvironment(): void {
-  if (environmentValidated) return;
-
-  const missing: string[] = [];
-  if (!BACKEND_URL) missing.push('BACKEND_URL');
-  if (!PVP_ARENA_CLOUD_TASKS_SECRET) missing.push('PVP_ARENA_CLOUD_TASKS_SECRET');
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
-  }
-
-  environmentValidated = true;
-}
-
-export async function scheduleArenaTask(eventType: PvpArenaEventType, payload: ArenaTaskPayload): Promise<void> {
-  validateEnvironment();
-
+export const schedulePvpArenaTask = async (
+  eventType: PvpArenaEventType,
+  payload: PvpArenaTaskPayload,
+): Promise<void> => {
+  const config = getPvpArenaConfig();
   const metadata = EVENT_METADATA[eventType];
-  const { client, parent } = createCloudTasksContext({ queueName: PVP_ARENA_QUEUE_NAME });
+
+  const { client, parent } = createCloudTasksContext({ queueName: config.queueName });
 
   const body: Record<string, string | number> = {
     txHash: payload.txHash,
@@ -67,10 +51,10 @@ export async function scheduleArenaTask(eventType: PvpArenaEventType, payload: A
   const task = {
     httpRequest: {
       httpMethod: 'POST' as const,
-      url: `${BACKEND_URL}${metadata.path}`,
+      url: `${config.backendUrl}${metadata.path}`,
       headers: {
         'Content-Type': 'application/json',
-        'x-monsters-cloudtasks-secret': PVP_ARENA_CLOUD_TASKS_SECRET,
+        'x-monsters-cloudtasks-secret': config.secret,
         'X-Cloud-Task': metadata.taskName,
         'X-Source': 'envio-indexer',
       },
@@ -80,7 +64,8 @@ export async function scheduleArenaTask(eventType: PvpArenaEventType, payload: A
 
   try {
     await client.createTask({ parent, task });
-  } catch (error: any) {
-    throw new Error(`Failed to create PVP arena Cloud Task (${eventType}) for tx ${payload.txHash}: ${error.message}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to create PVP arena Cloud Task (${eventType}) for tx ${payload.txHash}: ${message}`);
   }
-}
+};

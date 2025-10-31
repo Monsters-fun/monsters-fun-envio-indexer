@@ -78,6 +78,91 @@ contracts:
           transaction_fields:
             - hash
 
+  # ————————————————— 84532 contracts —————————————————
+  - name: DuelTradeCore
+    handler: src/EventHandlers.ts
+    events:
+      - event: event StrategyRegistered(uint256 indexed strategyId, address indexed owner, address operator, address payout)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event StrategyOwnerUpdated(uint256 indexed strategyId, address indexed previousOwner, address indexed newOwner)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event StrategyStatusChanged(uint256 indexed strategyId, uint8 oldStatus, uint8 newStatus, string reason)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PayoutProposed(uint256 indexed strategyId, address oldPayout, address newPayout, uint64 readyAt)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PayoutChanged(uint256 indexed strategyId, address oldPayout, address newPayout)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PayoutChangeCancelled(uint256 indexed strategyId, address oldPendingPayout)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event DefaultFeeUpdated(uint16 oldBps, uint16 newBps)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event StrategyFeeUpdated(uint256 indexed strategyId, uint16 oldBps, uint16 newBps)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PaymentReceived(uint256 indexed paymentId, uint256 indexed strategyId, address indexed payer, address beneficiary, uint256 amount, uint16 feeBps, uint256 platformFee, uint256 netToStrategy, bytes32 offchainRef, uint32 accessDurationSec)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event WithdrawalRequested(uint256 indexed requestId, uint256 indexed strategyId, uint256 amount, uint64 unlockTime)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event WithdrawalBlocked(uint256 indexed requestId, uint256 indexed strategyId, address by, string reason)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event WithdrawalReleased(uint256 indexed requestId, uint256 indexed strategyId, address to, uint256 amount, uint256 remainingEscrow)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PlatformFeesForwarded(address indexed to, uint256 amount)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PlatformFeesForwardFailed(address indexed to, uint256 amount)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PlatformFeesWithdrawn(address indexed to, uint256 amount)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event StrategySlashed(uint256 indexed strategyId, uint256 amount, string reason)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PlatformTreasuryProposed(address oldTreasury, address newTreasury, uint64 readyAt)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event PlatformTreasuryChanged(address oldTreasury, address newTreasury)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event Paused(address account)
+        field_selection:
+          transaction_fields:
+            - hash
+      - event: event Unpaused(address account)
+        field_selection:
+          transaction_fields:
+            - hash
+
 #######################################################
 # MULTICHAIN SETTINGS
 #######################################################
@@ -85,17 +170,17 @@ unordered_multichain_mode: true
 
 networks:
   # ---------- ABS testnet ----------
-  # - id: 11124
-    # start_block: 11881389
-    # rpc: https://api.testnet.abs.xyz
-    # contracts:
-      # - name: CreatureBoringFactory
-      #   address: "0x3B2FBD0658075349E86e5FA32881479fB3de43B2"
-      # - name: CreatureBoringToken
-      # - name: L2NativeToken
-      #   address: "0x000000000000000000000000000000000000800A"
-      # - name: MonstersPvpArenaV1
-      #   address: "0xa43668c529fDeCf46aFa52734a8eF609c4b7AfcE"
+  - id: 11124
+    start_block: 11881389
+    rpc: https://api.testnet.abs.xyz
+    contracts:
+      - name: CreatureBoringFactory
+        address: "0x3B2FBD0658075349E86e5FA32881479fB3de43B2"
+      - name: CreatureBoringToken
+      - name: L2NativeToken
+        address: "0x000000000000000000000000000000000000800A"
+      - name: MonstersPvpArenaV1
+        address: "0xa43668c529fDeCf46aFa52734a8eF609c4b7AfcE"
 
   # ---------- ABS mainnet ----------
   - id: 2741
@@ -103,10 +188,19 @@ networks:
     contracts:
       - name: MonsterCapsule
         address: "0x38272B362bcA267Dc8e9120087c93CefB86a69aC"
-      - name: L2NativeToken
-        address: "0x000000000000000000000000000000000000800A"
-      - name: CreatureBoringFactory
-        address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
-      - name: CreatureBoringToken
-      - name: MonstersPvpArenaV1
-        address: "0x95eF8b998c504410cbc101A2Fc93A134a30bA619"
+      # - name: L2NativeToken
+      #   address: "0x000000000000000000000000000000000000800A"
+      # - name: CreatureBoringFactory
+      #   address: "0xA12A761160c4B5Cf3b1ECb36391f0102B93b79C4"
+      # - name: CreatureBoringToken
+      # - name: MonstersPvpArenaV1
+      #   address: "0x95eF8b998c504410cbc101A2Fc93A134a30bA619"
+
+  # ---------- Base Sepolia ----------
+  - id: 84532
+    start_block: 32984050
+    rpc: https://sepolia.base.org
+    contracts:
+      - name: DuelTradeCore
+        address: "0xfFf5454a2231CFac95BadD9563069f55A5fa88c9"
+        abi_file_path: contracts/duelTradeCore/DuelTradeCore.json

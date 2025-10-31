@@ -1,7 +1,7 @@
 // Centralized environment configuration
 // Read process.env here only; everywhere else import these values
 
-const readEnv = (key: string): string | undefined => {
+export const readEnv = (key: string): string | undefined => {
   const direct = process.env[key];
   if (typeof direct === "string" && direct.length > 0) return direct;
 
@@ -11,19 +11,21 @@ const readEnv = (key: string): string | undefined => {
   return undefined;
 };
 
-const env = (key: string, defaultValue = ""): string => {
+export const env = (key: string, defaultValue = ""): string => {
   const value = readEnv(key);
   return value !== undefined ? value : defaultValue;
 };
 
-const boolEnv = (key: string, defaultValue = true): boolean => {
+export const optionalEnv = (key: string): string | undefined => readEnv(key);
+
+export const boolEnv = (key: string, defaultValue = true): boolean => {
   const raw = readEnv(key);
   if (raw === undefined) return defaultValue;
   const val = String(raw).trim().toLowerCase();
   return val === "1" || val === "true" || val === "yes" || val === "on";
 };
 
-const bigIntEnv = (key: string, defaultValue: bigint = 0n): bigint => {
+export const bigIntEnv = (key: string, defaultValue: bigint = 0n): bigint => {
   const raw = readEnv(key);
   if (raw === undefined) return defaultValue;
   const trimmed = raw.trim();
@@ -53,12 +55,6 @@ export const GOOGLE_APPLICATION_CREDENTIALS_JSON = env("GOOGLE_APPLICATION_CREDE
 export const PAYMENTS_CLOUD_TASKS_SECRET = env("PAYMENTS_CLOUD_TASKS_SECRET");
 export const PAYMENT_CONFIRMATION_MIN_BLOCK = bigIntEnv("PAYMENT_CONFIRMATION_MIN_BLOCK", 0n);
 
-export const PVP_ARENA_QUEUE_NAME = env("PVP_ARENA_QUEUE_NAME", "pvp-arena");
-export const PVP_ARENA_CLOUD_TASKS_SECRET = env("PVP_ARENA_CLOUD_TASKS_SECRET", PAYMENTS_CLOUD_TASKS_SECRET);
-export const PVP_ARENA_MIN_BLOCK = bigIntEnv("PVP_ARENA_MIN_BLOCK", 0n);
-
-// PVP arena configuration
-export const PVP_ARENA_ADDRESS = env("PVP_ARENA_ADDRESS", "0x95eF8b998c504410cbc101A2Fc93A134a30bA619").toLowerCase();
 
 // Payments addresses
 export const PAYMENT_DESTINATION_ADDRESS = env("PAYMENT_DESTINATION_ADDRESS", "0xB783448d31Ce8768B1F296fa3541A297fC1353c7").toLowerCase();

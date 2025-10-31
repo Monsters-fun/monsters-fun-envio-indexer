@@ -1,8 +1,8 @@
 import type {
   Capsule,
-  HandlerContext,
+  handlerContext as HandlerContext,
 } from "generated";
-import { getCapsuleType } from "../monsterCapsule/capsuleMetadata";
+import { getCapsuleType } from "../../monsterCapsule/capsuleMetadata";
 
 /**
  * Create and save a new Capsule entity

@@ -117,6 +117,10 @@ export function getCloudTasksClient(): CloudTasksClient {
 
 export interface CloudTasksContextOptions {
   queueName?: string;
+  projectId?: string;
+  location?: string;
+  credentialsJson?: string;
+  credentialsPath?: string;
 }
 
 export interface CloudTasksContext {
@@ -131,10 +135,76 @@ function normalizeConfigValue(value: string | undefined): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function parseCredentialsString(value: string): CredentialBody {
+  const candidate = decodeMaybeBase64(value);
+  const clientEmail = typeof candidate.client_email === 'string' ? candidate.client_email.trim() : '';
+  const privateKeyRaw = typeof candidate.private_key === 'string' ? candidate.private_key : '';
+
+  if (!clientEmail) {
+    throw new Error('missing client_email');
+  }
+
+  if (!privateKeyRaw.trim()) {
+    throw new Error('missing private_key');
+  }
+
+  const normalizedPrivateKey = privateKeyRaw.replace(/\\n/g, '\n');
+
+  return {
+    ...(candidate as CredentialBody),
+    client_email: clientEmail,
+    private_key: normalizedPrivateKey,
+  };
+}
+
+function createCustomCloudTasksClient(options: {
+  projectId?: string;
+  credentialsJson?: string;
+  credentialsPath?: string;
+}): CloudTasksClient {
+  const clientOptions: ClientOptions = {};
+
+  if (options.projectId) {
+    clientOptions.projectId = options.projectId;
+  }
+
+  if (options.credentialsJson && options.credentialsJson.trim().length > 0) {
+    try {
+      clientOptions.credentials = parseCredentialsString(options.credentialsJson);
+      if (!clientOptions.projectId) {
+        const credentialsProjectId = (clientOptions.credentials as { project_id?: string }).project_id;
+        if (typeof credentialsProjectId === 'string' && credentialsProjectId.length > 0) {
+          clientOptions.projectId = credentialsProjectId;
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Invalid custom GOOGLE_APPLICATION_CREDENTIALS_JSON: ${message}`);
+    }
+  } else if (options.credentialsPath && options.credentialsPath.trim().length > 0) {
+    clientOptions.keyFilename = options.credentialsPath;
+  } else {
+    const credentials = getServiceAccountCredentials();
+    if (credentials) {
+      clientOptions.credentials = credentials;
+      const credentialsProjectId = (credentials as { project_id?: string }).project_id;
+      if (!clientOptions.projectId && typeof credentialsProjectId === 'string' && credentialsProjectId.length > 0) {
+        clientOptions.projectId = credentialsProjectId;
+      }
+    } else if (GOOGLE_APPLICATION_CREDENTIALS) {
+      clientOptions.keyFilename = GOOGLE_APPLICATION_CREDENTIALS;
+    }
+  }
+
+  return new CloudTasksClient(clientOptions);
+}
+
 export function createCloudTasksContext(options: CloudTasksContextOptions = {}): CloudTasksContext {
-  const projectId = normalizeConfigValue(GCP_PROJECT_ID);
-  const location = normalizeConfigValue(GCP_LOCATION);
+  const projectId = normalizeConfigValue(options.projectId ?? GCP_PROJECT_ID);
+  const location = normalizeConfigValue(options.location ?? GCP_LOCATION);
   const queueName = normalizeConfigValue(options.queueName ?? GCP_QUEUE_NAME);
+  const credentialsJson = normalizeConfigValue(options.credentialsJson);
+  const credentialsPath = normalizeConfigValue(options.credentialsPath);
 
   if (!projectId) {
     throw new Error('Missing GCP_PROJECT_ID configuration');
@@ -148,7 +218,16 @@ export function createCloudTasksContext(options: CloudTasksContextOptions = {}):
     throw new Error('Missing Cloud Tasks queue name (set GCP_QUEUE_NAME or provide one explicitly)');
   }
 
-  const client = getCloudTasksClient();
+  const shouldUseCustomClient =
+    Boolean(credentialsJson) || Boolean(credentialsPath) || Boolean(options.projectId) || Boolean(options.location);
+
+  const client = shouldUseCustomClient
+    ? createCustomCloudTasksClient({
+        projectId,
+        credentialsJson: credentialsJson || undefined,
+        credentialsPath: credentialsPath || undefined,
+      })
+    : getCloudTasksClient();
   const parent = client.queuePath(projectId, location, queueName);
 
   return { client, parent, queueName, projectId, location };

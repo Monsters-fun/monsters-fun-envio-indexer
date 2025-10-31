@@ -1,5 +1,6 @@
 // Centralized export/initialization of all handler modules.
 
-import "./MonsterCapsule";
+import "../monsterCapsule";
 import "./L2NativeToken";
-import "./PvpArena";
+import "../pvpArena";
+import "../duelTradeCore";
