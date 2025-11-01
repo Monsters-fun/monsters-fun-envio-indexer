@@ -40,6 +40,31 @@ type StrategyRegisteredParams = {
   payout: string;
 };
 
+type WithdrawalRequestedParams = {
+  requestId: bigint;
+  strategyId: bigint;
+  operator: string;
+  payout: string;
+  amount: bigint;
+  unlockTime: bigint;
+};
+
+type WithdrawalBlockedParams = {
+  requestId: bigint;
+  strategyId: bigint;
+  by: string;
+  reason: string;
+};
+
+type WithdrawalReleasedParams = {
+  requestId: bigint;
+  strategyId: bigint;
+  operator: string;
+  to: string;
+  amount: bigint;
+  remainingEscrow: bigint;
+};
+
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -80,6 +105,11 @@ const requireSafeNumber = (value: bigint, label: string): number => {
     throw new Error(`${label} exceeds safe integer range`);
   }
   return numeric;
+};
+
+const toIsoFromSeconds = (value: bigint, label: string): string => {
+  const unixSeconds = requireSafeNumber(value, label);
+  return new Date(unixSeconds * 1000).toISOString();
 };
 
 const appendChainId = (
@@ -129,9 +159,9 @@ const buildPaymentEnvelope = (
       strategyId: strategyIdNumber,
       payer: payment.payer.toLowerCase(),
       beneficiary: payment.beneficiary.toLowerCase(),
-      amountWei: payment.amount.toString(),
-      platformFeeWei: payment.platformFee.toString(),
-      netToStrategyWei: payment.netToStrategy.toString(),
+      amountAtomic: payment.amount.toString(),
+      platformFeeAtomic: payment.platformFee.toString(),
+      netToStrategyAtomic: payment.netToStrategy.toString(),
       feeBps: feeBpsNumber ?? undefined,
       accessDurationSec: accessDurationNumber ?? undefined,
       offchainRef: normalizeValue(payment.offchainRef),
@@ -164,6 +194,104 @@ const buildStrategyRegisteredEnvelope = (
       owner: strategy.owner.toLowerCase(),
       operator: strategy.operator.toLowerCase(),
       payout: strategy.payout.toLowerCase(),
+    },
+  };
+};
+
+const buildWithdrawalRequestedEnvelope = (
+  params: Record<string, unknown>,
+  basePayload: Record<string, unknown>,
+): DuelTradeCoreEventEnvelope => {
+  const request = params as Partial<WithdrawalRequestedParams>;
+
+  if (
+    typeof request.requestId !== 'bigint' ||
+    typeof request.strategyId !== 'bigint' ||
+    typeof request.amount !== 'bigint' ||
+    typeof request.unlockTime !== 'bigint' ||
+    typeof request.operator !== 'string' ||
+    typeof request.payout !== 'string'
+  ) {
+    throw new Error('WithdrawalRequested params missing or invalid');
+  }
+
+  const requestIdNumber = requireSafeNumber(request.requestId, 'requestId');
+  const strategyIdNumber = requireSafeNumber(request.strategyId, 'strategyId');
+
+  return {
+    type: 'withdrawal.requested',
+    payload: {
+      ...basePayload,
+      requestId: requestIdNumber,
+      strategyId: strategyIdNumber,
+      operator: request.operator.toLowerCase(),
+      payout: request.payout.toLowerCase(),
+      amountAtomic: request.amount.toString(),
+      unlockTime: toIsoFromSeconds(request.unlockTime, 'unlockTime'),
+    },
+  };
+};
+
+const buildWithdrawalBlockedEnvelope = (
+  params: Record<string, unknown>,
+  basePayload: Record<string, unknown>,
+): DuelTradeCoreEventEnvelope => {
+  const blocked = params as Partial<WithdrawalBlockedParams>;
+
+  if (
+    typeof blocked.requestId !== 'bigint' ||
+    typeof blocked.strategyId !== 'bigint' ||
+    typeof blocked.by !== 'string' ||
+    typeof blocked.reason !== 'string'
+  ) {
+    throw new Error('WithdrawalBlocked params missing or invalid');
+  }
+
+  const requestIdNumber = requireSafeNumber(blocked.requestId, 'requestId');
+  const strategyIdNumber = requireSafeNumber(blocked.strategyId, 'strategyId');
+
+  return {
+    type: 'withdrawal.blocked',
+    payload: {
+      ...basePayload,
+      requestId: requestIdNumber,
+      strategyId: strategyIdNumber,
+      actor: blocked.by.toLowerCase(),
+      reason: blocked.reason,
+    },
+  };
+};
+
+const buildWithdrawalReleasedEnvelope = (
+  params: Record<string, unknown>,
+  basePayload: Record<string, unknown>,
+): DuelTradeCoreEventEnvelope => {
+  const released = params as Partial<WithdrawalReleasedParams>;
+
+  if (
+    typeof released.requestId !== 'bigint' ||
+    typeof released.strategyId !== 'bigint' ||
+    typeof released.amount !== 'bigint' ||
+    typeof released.remainingEscrow !== 'bigint' ||
+    typeof released.operator !== 'string' ||
+    typeof released.to !== 'string'
+  ) {
+    throw new Error('WithdrawalReleased params missing or invalid');
+  }
+
+  const requestIdNumber = requireSafeNumber(released.requestId, 'requestId');
+  const strategyIdNumber = requireSafeNumber(released.strategyId, 'strategyId');
+
+  return {
+    type: 'withdrawal.released',
+    payload: {
+      ...basePayload,
+      requestId: requestIdNumber,
+      strategyId: strategyIdNumber,
+      operator: released.operator.toLowerCase(),
+      recipient: released.to.toLowerCase(),
+      amountAtomic: released.amount.toString(),
+      remainingEscrowAtomic: released.remainingEscrow.toString(),
     },
   };
 };
@@ -209,6 +337,18 @@ export const buildDuelTradeCoreEventEnvelope = (
 
   if (eventType === 'StrategyRegistered') {
     return buildStrategyRegisteredEnvelope(event.params, basePayload);
+  }
+
+  if (eventType === 'WithdrawalRequested') {
+    return buildWithdrawalRequestedEnvelope(event.params, basePayload);
+  }
+
+  if (eventType === 'WithdrawalBlocked') {
+    return buildWithdrawalBlockedEnvelope(event.params, basePayload);
+  }
+
+  if (eventType === 'WithdrawalReleased') {
+    return buildWithdrawalReleasedEnvelope(event.params, basePayload);
   }
 
   return buildGenericEnvelope(eventType, event.params, basePayload);

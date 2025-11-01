@@ -118,7 +118,7 @@ contracts:
         field_selection:
           transaction_fields:
             - hash
-      - event: event WithdrawalRequested(uint256 indexed requestId, uint256 indexed strategyId, uint256 amount, uint64 unlockTime)
+      - event: event WithdrawalRequested(uint256 indexed requestId, uint256 indexed strategyId, address operator, address payout, uint256 amount, uint64 unlockTime)
         field_selection:
           transaction_fields:
             - hash
@@ -126,7 +126,7 @@ contracts:
         field_selection:
           transaction_fields:
             - hash
-      - event: event WithdrawalReleased(uint256 indexed requestId, uint256 indexed strategyId, address to, uint256 amount, uint256 remainingEscrow)
+      - event: event WithdrawalReleased(uint256 indexed requestId, uint256 indexed strategyId, address operator, address to, uint256 amount, uint256 remainingEscrow)
         field_selection:
           transaction_fields:
             - hash
@@ -202,5 +202,5 @@ networks:
     rpc: https://sepolia.base.org
     contracts:
       - name: DuelTradeCore
-        address: "0xfFf5454a2231CFac95BadD9563069f55A5fa88c9"
+        address: "0xe7d829548dda938fbc5f30d9a25583a11d5aed1a"
         abi_file_path: contracts/duelTradeCore/DuelTradeCore.json

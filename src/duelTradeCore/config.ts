@@ -27,7 +27,7 @@ let cachedConfig: DuelTradeCoreConfig | null = null;
 export const getDuelTradeCoreConfig = (): DuelTradeCoreConfig => {
   if (cachedConfig) return cachedConfig;
 
-  const address = env('DUEL_TRADE_CORE_ADDRESS', '0xfFf5454a2231CFac95BadD9563069f55A5fa88c9').toLowerCase();
+  const address = env('DUEL_TRADE_CORE_ADDRESS', '0xe7d829548dda938fbc5f30d9a25583a11d5aed1a').toLowerCase();
   const backendUrl = env('DUEL_TRADE_CORE_BACKEND_URL', BACKEND_URL).trim();
   const queueName = env('DUEL_TRADE_CORE_QUEUE_NAME', 'duel-trade').trim();
   const indexerSecret = env('DUEL_TRADE_CORE_INDEXER_SECRET', PAYMENTS_CLOUD_TASKS_SECRET).trim();
