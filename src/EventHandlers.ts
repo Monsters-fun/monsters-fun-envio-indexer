@@ -95,19 +95,42 @@ CreatureBoringToken.Transfer.handler(async ({ event, context }) => {
 
   // Check if transfer is to the payment address and forward to backend
   if (IS_ERC20_PAYMENT_FORWARDING_ENABLED) {
-    if (PAYMENT_DESTINATION_ADDRESS && to.toLowerCase() === PAYMENT_DESTINATION_ADDRESS) {
+    const normalizedTo = to.toLowerCase();
+    if (PAYMENT_DESTINATION_ADDRESS && normalizedTo === PAYMENT_DESTINATION_ADDRESS) {
+      const detectionLog = {
+        hash,
+        monster: srcAddress,
+        from,
+        to: normalizedTo,
+        rawAmount: value.toString(),
+        tokenAmount: tokenAmount.toString(),
+        blockNumber: blockNumber.toString(),
+        logIndex,
+      };
+
+      context.log.info("Detected ERC20 payment transfer", detectionLog);
+
       if (blockNumber < PAYMENT_CONFIRMATION_MIN_BLOCK) {
         context.log.info("Skipping payment confirmation scheduling below min block", {
-          hash,
-          blockNumber: blockNumber.toString(),
+          ...detectionLog,
           minBlock: PAYMENT_CONFIRMATION_MIN_BLOCK.toString(),
         });
       } else {
         try {
-          await schedulePaymentConfirmation(hash);
+          const taskMetadata = await schedulePaymentConfirmation(hash);
+          context.log.info("Scheduled Cloud Task for ERC20 payment", {
+            ...detectionLog,
+            taskName: taskMetadata.taskName,
+            taskQueue: taskMetadata.queueName,
+            taskProjectId: taskMetadata.projectId,
+            taskLocation: taskMetadata.location,
+          });
         } catch (error) {
-          // Log but don't throw - let indexer continue
-          context.log.error(`Failed to schedule payment confirmation:`, error as Error);
+          const message = error instanceof Error ? error.message : String(error);
+          context.log.error("Failed to schedule payment confirmation for ERC20 transfer", {
+            ...detectionLog,
+            error: message,
+          });
         }
       }
     }

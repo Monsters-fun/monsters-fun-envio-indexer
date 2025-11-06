@@ -21,6 +21,13 @@ export function logPaymentDetection(details: PaymentDetectionDetails): void {
   });
 }
 
+export interface PaymentConfirmationTaskMetadata {
+  taskName?: string;
+  projectId: string;
+  location: string;
+  queueName: string;
+}
+
 function validateEnvironment(): void {
   if (environmentValidated) return;
 
@@ -40,10 +47,10 @@ function validateEnvironment(): void {
  */
 export async function schedulePaymentConfirmation(
   transactionHash: string
-): Promise<void> {
+): Promise<PaymentConfirmationTaskMetadata> {
   // Validate environment on first use
   validateEnvironment();
-  const { client, parent } = createCloudTasksContext();
+  const { client, parent, queueName, projectId, location } = createCloudTasksContext();
 
   const task = {
     httpRequest: {
@@ -65,9 +72,18 @@ export async function schedulePaymentConfirmation(
   };
 
   try {
-    await client.createTask({ parent, task });
+    const [response] = await client.createTask({ parent, task });
+    const taskName = response?.name ?? undefined;
+    return {
+      taskName,
+      queueName,
+      projectId,
+      location,
+    };
   } catch (error: any) {
-    // Re-throw with more context for the caller to handle
-    throw new Error(`Failed to create Cloud Task for tx ${transactionHash}: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Failed to create Cloud Task for tx ${transactionHash} (queue=${queueName}, project=${projectId}, location=${location}): ${message}`
+    );
   }
 }
