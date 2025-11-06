@@ -1,2 +1,2 @@
 - [] whitelist buy events
-redeploy
+force
