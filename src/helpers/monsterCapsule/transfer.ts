@@ -1,6 +1,6 @@
 import type {
   CapsuleHolder,
-  HandlerContext,
+  handlerContext as HandlerContext,
   Capsule,
 } from "generated";
 import {

@@ -424,20 +424,21 @@ CreatureBoringToken.BattleEnded.handlerWithLoader({
     const isWin = winner == srcAddress;
 
     if (isWin) {
-      allCurrentHoldings.forEach(async (currentHoldings) => {        
-        let trader = await context.Trader.get(currentHoldings.trader);
+      // Update trader points synchronously to avoid accessing context after handler resolution
+      for (const currentHoldings of allCurrentHoldings) {
+        const trader = await context.Trader.get(currentHoldings.trader);
         if (!trader) {
-          context.log.error("Trader has holdings but is not in the database")
-          return;
+          context.log.error("Trader has holdings but is not in the database");
+          continue;
         }
         const additionalPoints = new BigDecimal(WIN_POINTS_MULTIPLIER).multipliedBy(currentHoldings.balance);
-        trader = {
+        const updatedTrader = {
           ...trader,
           points: new BigDecimal(Math.floor(trader.points.plus(additionalPoints).toNumber())),
-        }
-        
-        context.Trader.set(trader);
-      })
+        };
+
+        context.Trader.set(updatedTrader);
+      }
     }
 
     let monster = await context.Monster.get(srcAddress);

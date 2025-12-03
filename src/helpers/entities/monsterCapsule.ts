@@ -1,6 +1,6 @@
 import type {
   Capsule,
-  HandlerContext,
+  handlerContext as HandlerContext,
 } from "generated";
 import { getCapsuleType } from "../monsterCapsule/capsuleMetadata";
 

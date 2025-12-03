@@ -1,6 +1,6 @@
 import type {
   CapsuleHolder,
-  HandlerContext,
+  handlerContext as HandlerContext,
 } from "generated";
 import { ZERO_ADDRESS, CAPSULE_STAKING_CONTRACT_ADDRESS } from "../../constants";
 
