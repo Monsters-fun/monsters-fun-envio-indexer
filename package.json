@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.0",
-    "envio": "2.27.6"
+    "envio": "2.32.3"
   },
   "optionalDependencies": {
     "generated": "./generated"
